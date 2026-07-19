@@ -1,0 +1,2515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4f7cff">
+<title>久窝朋赞 · 销售 CRM</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --primary:#4f7cff;--primary-dark:#3a63d9;--primary-light:#eaf1ff;
+  --success:#22c55e;--success-light:#e8f9ef;
+  --warn:#f59e0b;--warn-light:#fef5e7;
+  --danger:#ef4444;--danger-light:#fdeeec;
+  --purple:#8b5cf6;--purple-light:#f1ebfd;
+  --text:#1a2233;--text-2:#5a6478;--text-3:#9aa3b8;
+  --bg:#f4f6fb;--card:#ffffff;--border:#eceef3;
+  --s-new:#9aa3b8;--s-potential:#60a5fa;--s-valid:#f59e0b;--s-intent:#8b5cf6;--s-review:#ec4899;--s-signed:#22c55e;
+  --shadow-sm:0 1px 2px rgba(20,30,60,.05);
+  --shadow:0 1px 3px rgba(20,30,60,.06),0 4px 16px rgba(20,30,60,.04);
+  --shadow-md:0 4px 24px rgba(20,30,60,.08);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --radius:14px;--radius-sm:10px;--radius-lg:18px;
+  --sidebar-w:240px;
+}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font-family:inherit;font-size:14px;outline:none}
+a{color:var(--primary);text-decoration:none}
+.app-shell{min-height:100vh;display:flex;flex-direction:column}
+.app-shell.has-nav{padding-bottom:calc(64px + var(--safe-bottom))}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.container{width:100%;max-width:720px;margin:0 auto;padding:0 16px}
+.container.wide{max-width:1100px}
+.container.full{max-width:none;padding:0}
+.sidebar{display:none}
+.sidebar-logo{padding:22px 24px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.sidebar-logo .logo-ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.sidebar-section{padding:8px 24px 4px;font-size:11px;color:var(--text-3);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:11px 24px;font-size:14px;color:var(--text-2);cursor:pointer;border-left:3px solid transparent;transition:background .15s}
+.sidebar-item:hover{background:var(--bg)}
+.sidebar-item.active{color:var(--primary);background:var(--primary-light);border-left-color:var(--primary);font-weight:600}
+.sidebar-item .si{font-size:19px;width:22px;text-align:center}
+.sidebar-user{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.login-wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 28px;background:linear-gradient(160deg,#4f7cff 0%,#6a8dff 40%,#8b5cf6 100%)}
+.login-logo{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.18);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px}
+.login-title{color:#fff;font-size:26px;font-weight:700;letter-spacing:.5px;margin-bottom:40px}
+.login-sub{color:rgba(255,255,255,.8);font-size:13px;margin-top:6px;margin-bottom:40px}
+.login-card{background:#fff;border-radius:20px;padding:28px 24px;box-shadow:0 20px 50px rgba(0,0,0,.18);max-width:420px;margin:0 auto;width:100%}
+.login-card h2{font-size:18px;margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--text-2);margin-bottom:6px;font-weight:500}
+.field input,.field select,.field textarea{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:12px;background:#fafbfc;font-size:15px;transition:.2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);background:#fff}
+.btn{display:block;width:100%;padding:13px;border-radius:12px;font-size:16px;font-weight:600;text-align:center;transition:.15s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:active{background:var(--primary-dark)}
+.btn-ghost{background:#f0f2f7;color:var(--text-2)}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}
+.btn-sm{display:inline-block;width:auto;padding:8px 16px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5}
+.login-tip{font-size:12px;color:var(--text-3);margin-top:16px;line-height:1.8;text-align:center}
+.header{position:sticky;top:0;z-index:20;background:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.header h1{font-size:18px;font-weight:600}
+.header .h-left{display:flex;align-items:center;gap:8px}
+.header .back{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-2);cursor:pointer}
+.header .h-right{display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.biz-tag{font-size:11px;padding:3px 8px;border-radius:6px;background:var(--primary-light);color:var(--primary);font-weight:500;white-space:nowrap}
+.content{flex:1;padding:16px}
+.section-title{font-size:13px;color:var(--text-2);font-weight:600;margin:18px 0 10px;display:flex;align-items:center;justify-content:space-between}
+.section-title:first-child{margin-top:0}
+.section-title .more{font-size:12px;color:var(--primary);font-weight:400;cursor:pointer}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
+.card-tap{cursor:pointer;transition:transform .1s,box-shadow .15s}
+.card-tap:hover{box-shadow:var(--shadow-md)}
+.card-tap:active{transform:scale(.99)}
+.card-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card-title{font-size:15px;font-weight:600;flex:1;min-width:0}
+.card-sub{font-size:12px;color:var(--text-3);margin-top:4px}
+.status{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+.status::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-new{background:#f0f2f7;color:var(--s-new)}
+.s-potential{background:#e6f0ff;color:var(--s-potential)}
+.s-valid{background:var(--warn-light);color:var(--s-valid)}
+.s-intent{background:var(--purple-light);color:var(--s-intent)}
+.s-review{background:#fce7f3;color:var(--s-review)}
+.s-signed{background:var(--success-light);color:var(--s-signed)}
+.greeting{padding:18px 0 8px}
+.greeting .name{font-size:22px;font-weight:700}
+.greeting .date{font-size:12px;color:var(--text-3);margin-top:4px}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:4px 0 4px}.stat{background:#fff;border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+.stat .num{font-size:24px;font-weight:700}
+.stat .lbl{font-size:12px;color:var(--text-2);margin-top:2px}
+.stat .sub{font-size:11px;color:var(--text-3);margin-top:4px}
+.stat.blue .num{color:var(--primary)}
+.stat.green .num{color:var(--success)}
+.stat.purple .num{color:var(--purple)}
+.stat.amber .num{color:var(--warn)}
+.stat.orange .num{color:#f59e0b}
+.target-card{margin:4px 0 12px;background:linear-gradient(135deg,#4f7cff,#6a8dff);border-radius:var(--radius);padding:16px;color:#fff;box-shadow:0 6px 20px rgba(79,124,255,.25)}
+.target-card .tc-top{display:flex;justify-content:space-between;align-items:flex-end}
+.target-card .tc-lbl{font-size:12px;opacity:.85}
+.target-card .tc-val{font-size:26px;font-weight:700;margin-top:2px}
+.target-card .tc-pct{font-size:28px;font-weight:700}
+.target-card .tc-bar{height:8px;background:rgba(255,255,255,.25);border-radius:4px;margin-top:12px;overflow:hidden}
+.target-card .tc-bar span{display:block;height:100%;background:#fff;border-radius:4px;transition:width .4s}
+.target-card .tc-types{display:flex;gap:10px;margin-top:12px;font-size:12px}
+.target-card .tc-types div{flex:1;background:rgba(255,255,255,.15);border-radius:8px;padding:7px 8px}
+.target-card .tc-types .tt-num{font-size:16px;font-weight:700}
+.target-card .tc-types .tt-lbl{opacity:.85;font-size:11px}
+.quick-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 0 4px}
+.quick{background:#fff;border-radius:12px;padding:12px 6px;text-align:center;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+.quick:active{transform:scale(.97)}
+.quick .ico{width:40px;height:40px;border-radius:12px;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.quick .t{font-size:12px;color:var(--text-2)}
+.list-toolbar{position:sticky;top:60px;z-index:5;background:var(--bg);padding:10px 0 4px}
+.list-search{width:100%;padding:11px 14px 11px 38px;border-radius:22px;border:1px solid var(--border);background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239aa3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 12px no-repeat;font-size:14px}
+.filter-bar{display:flex;gap:6px;padding:8px 0 4px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filter-bar::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:6px 13px;border-radius:20px;font-size:12px;background:#fff;color:var(--text-2);border:1px solid var(--border);white-space:nowrap;cursor:pointer}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.cust-list{display:flex;flex-direction:column;gap:0}
+.cust-item{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);cursor:pointer;transition:box-shadow .15s,transform .1s}
+.cust-item:hover{box-shadow:var(--shadow)}
+.cust-item:active{transform:scale(.99)}
+.cust-info{flex:1;min-width:0}
+.cust-info .cn{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cust-info .cm{font-size:12px;color:var(--text-3);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cust-meta{text-align:right;flex-shrink:0}
+.amount{font-size:14px;font-weight:600;color:var(--danger)}
+.amount.muted{color:var(--text-3);font-weight:400}
+.ctype-pills{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;margin-top:4px}
+.ctype-pill{font-size:10px;padding:1px 6px;border-radius:4px}
+.empty{text-align:center;padding:60px 20px;color:var(--text-3)}
+.empty .em-ico{font-size:48px;margin-bottom:12px;opacity:.4}
+.empty p{font-size:13px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));max-width:720px;margin:0 auto;z-index:30}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px;color:var(--text-3);font-size:11px;cursor:pointer}
+.nav-item.active{color:var(--primary)}
+.nav-item .ni{font-size:22px;line-height:1}
+.fab{position:fixed;right:18px;bottom:calc(80px + var(--safe-bottom));width:54px;height:54px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 6px 20px rgba(79,124,255,.4);z-index:25;cursor:pointer}
+.fab:active{transform:scale(.92)}
+.modal-mask{position:fixed;inset:0;background:rgba(20,30,60,.5);z-index:50;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:#fff;width:100%;max-width:720px;border-radius:20px 20px 0 0;max-height:92vh;overflow-y:auto;animation:slideup .25s}
+@keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-head{position:sticky;top:0;background:#fff;padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);z-index:2}
+.modal-head h3{font-size:16px;font-weight:600}
+.modal-head .close{font-size:24px;color:var(--text-3);width:32px;height:32px}
+.modal-body{padding:16px}
+.modal-foot{position:sticky;bottom:0;background:#fff;padding:12px 16px calc(12px + var(--safe-bottom));border-top:1px solid var(--border);display:flex;gap:10px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.form-group label .req{color:var(--danger)}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:#fafbfc;font-size:15px}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--primary);background:#fff}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.contract-list{margin-bottom:8px}
+.contract-row{display:grid;grid-template-columns:1.1fr .8fr .9fr auto;gap:6px;margin-bottom:8px;align-items:center}
+.contract-row select,.contract-row input{padding:9px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:#fafbfc}
+.contract-row .cr-del{width:32px;height:36px;border-radius:8px;background:var(--danger-light);color:var(--danger);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.add-contract-btn{font-size:13px;color:var(--primary);padding:8px;border:1.5px dashed var(--primary);border-radius:8px;text-align:center;cursor:pointer;background:var(--primary-light)}
+.timeline{padding-left:8px}
+.tl-item{position:relative;padding:0 0 16px 22px;border-left:2px solid var(--border)}
+.tl-item:last-child{border-left-color:transparent}
+.tl-item::before{content:'';position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--primary);border:2.5px solid #fff;box-shadow:0 0 0 2px var(--primary-light)}
+.tl-date{font-size:12px;color:var(--text-3)}
+.tl-content{font-size:14px;margin-top:4px;line-height:1.6}
+.tl-status{margin-top:6px}
+.tl-next{font-size:12px;color:var(--warn);margin-top:6px;background:var(--warn-light);padding:5px 9px;border-radius:6px;display:inline-block}
+.report-view{background:#fff;min-height:100vh}
+.report-head{background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff;padding:24px 0 20px;text-align:center}
+.report-head-inner{max-width:900px;margin:0 auto;padding:0 20px}
+.report-head .rh-name{font-size:15px;opacity:.9;font-weight:600}
+.report-head .rh-title{font-size:22px;font-weight:700;margin-top:6px}
+.report-head .rh-meta{font-size:12px;opacity:.85;margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.report-tabs{display:flex;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5}
+.report-tabs-inner{max-width:900px;margin:0 auto;display:flex;width:100%}
+.report-tabs button{flex:1;padding:12px;font-size:14px;color:var(--text-2);border-bottom:2px solid transparent;cursor:pointer;background:none}
+.report-tabs button.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.report-body{padding:16px;max-width:900px;margin:0 auto}
+.rp-sec{margin-bottom:18px}
+.rp-sec h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px;padding-left:8px;border-left:3px solid var(--primary)}
+.rp-sec .rp-num{font-size:13px;color:var(--text-2);margin-bottom:8px}
+.rp-cust{background:var(--bg);border-radius:10px;padding:12px;margin-bottom:8px}
+.rp-cust .rc-name{font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap}
+.rp-cust .rc-name-main{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-cust .rc-name-meta{display:flex;align-items:center;gap:8px;flex-shrink:0;justify-content:flex-end;color:var(--text-2);font-size:13px;font-weight:500;white-space:nowrap}
+.rp-cust .rc-name-meta .rc-amt{color:var(--danger);font-weight:600;font-size:13px}
+.rp-cust .rc-name-meta .rc-coll{color:#f59e0b;font-weight:600;font-size:13px}
+.rp-cust .rc-name-meta .rc-income{color:#22c55e;font-weight:600;font-size:13px}
+.rp-cust .rc-desc{font-size:13px;color:var(--text-2);margin-top:5px;line-height:1.6}
+.rp-cust .rc-amt{color:var(--danger);font-weight:600;font-size:13px}
+.rp-edit{background:var(--warn-light);border-radius:10px;padding:12px;margin-top:10px}
+.rp-edit label{font-size:12px;color:var(--text-2);font-weight:600;display:block;margin-bottom:6px}
+.rp-edit textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;min-height:70px;background:#fff;resize:vertical}
+.rp-summary{background:linear-gradient(135deg,#f0f4ff,#f7f0ff);border-radius:12px;padding:14px;margin-top:8px}
+.rp-summary label{font-size:12px;color:var(--text-2);font-weight:600;display:block;margin-bottom:6px}
+.rp-summary textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;min-height:60px;background:#fff;resize:vertical}
+.report-actions{display:flex;gap:10px;margin-bottom:14px}
+.report-actions .btn{flex:1}
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.kpi .k-num{font-size:20px;font-weight:700;color:var(--primary)}
+.kpi .k-lbl{font-size:11px;color:var(--text-2);margin-top:3px}
+.conv-table{width:100%;border-collapse:collapse;font-size:12px}
+.conv-table th,.conv-table td{padding:10px 6px;text-align:center;border-bottom:1px solid var(--border)}
+.conv-table th{background:var(--bg);color:var(--text-2);font-weight:600;font-size:11px}
+.conv-table td:first-child{text-align:left;padding-left:12px}
+.conv-table tbody tr:last-child td{border-bottom:none}
+.conv-table tbody tr:hover{background:var(--bg)}
+.team-card{display:flex;align-items:center;gap:12px;padding:14px;background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:var(--shadow);cursor:pointer}
+.team-card .tc-av{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:15px;flex-shrink:0}
+.team-card .tc-info{flex:1;min-width:0}
+.team-card .tc-name{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.team-card .tc-stat{font-size:12px;color:var(--text-3);margin-top:3px}
+.tc-mini{display:flex;gap:10px;font-size:12px;color:var(--text-2);text-align:center;flex-shrink:0}
+.tc-mini span{display:block}
+.tc-mini .m-num{font-size:16px;font-weight:600;color:var(--text)}
+.progress{height:6px;background:#f0f2f7;border-radius:3px;overflow:hidden;margin-top:6px}
+.progress span{display:block;height:100%;background:var(--primary);border-radius:3px;transition:width .4s}
+.perf-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.perf-card{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.perf-card .pc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.perf-card .pc-name{font-weight:600;font-size:15px}
+.perf-card .pc-target-bar{height:10px;background:#f0f2f7;border-radius:5px;overflow:hidden;margin:8px 0}
+.perf-card .pc-target-bar span{display:block;height:100%;border-radius:5px;transition:width .4s}
+.perf-card .pc-types{display:flex;gap:8px;margin-top:10px}
+.perf-card .pc-type{flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center;border:1.5px solid transparent;transition:all .2s}
+.perf-card .pc-type .pt-num{font-size:16px;font-weight:700}
+.perf-card .pc-type .pt-lbl{font-size:11px;color:var(--text-2);margin-top:2px}
+.perf-card .pc-type.main{background:var(--primary-light);border-color:var(--primary)}
+.perf-card .pc-type.main .pt-num{font-size:18px}
+.perf-card .pc-type.main .pt-lbl{color:var(--primary);font-weight:600}
+.perf-card .pc-type.supplementary{opacity:.7}
+.protection-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 8px;border-radius:6px;background:#fff3cd;color:#856404;font-weight:600;white-space:nowrap;border:1px solid #ffe69c}
+/* v5: 管理看板时间筛选器 */
+.dash-filter{background:#fff;border-radius:var(--radius);padding:12px;margin-bottom:14px;box-shadow:var(--shadow)}
+.dash-filter .filter-bar{margin-bottom:8px}
+.dash-filter .filter-bar .chip{margin-right:6px}
+.dash-range-label{font-size:12px;color:var(--text-2);margin-top:4px}
+.dash-custom{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.dash-custom input{padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px}
+.dash-custom span{color:var(--text-3)}
+/* v5: 入职分析按月表格 */
+.hire-month-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.hire-month-table .hmt-row{display:grid;grid-template-columns:1.4fr 0.7fr 0.7fr 0.7fr 0.9fr;padding:7px 10px;border-bottom:1px solid var(--border);align-items:center}
+.hire-month-table .hmt-row:last-child{border-bottom:none}
+.hire-month-table .hmt-head{background:var(--bg);color:var(--text-2);font-size:11px;font-weight:600}
+.hire-month-table .hmt-row.current{background:#fff3cd}
+.hire-month-table .hmt-row > div{text-align:center}
+.hire-month-table .hmt-row > div:first-child{text-align:left}
+.hire-month-chart{background:var(--bg);border-radius:8px;padding:10px}
+.hmc-bars{display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:6px}
+.hmc-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end;min-width:0}
+.hmc-bar{width:80%;max-width:28px;border-radius:4px 4px 0 0;min-height:3px;transition:height .3s}
+.hmc-lbl{font-size:10px;color:var(--text-3);margin-top:4px}
+.hmc-val{font-size:10px;color:var(--text-2);font-weight:600}
+.cust-type-tag{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:500}
+.cust-type-tag.new{background:#e8f9ef;color:var(--success)}
+.cust-type-tag.history{background:var(--primary-light);color:var(--primary)}
+.report-filter{background:#fff;border-radius:var(--radius);padding:12px;margin-bottom:12px;box-shadow:var(--shadow)}
+.report-filter select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:#fafbfc;font-size:14px}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(20,30,60,.92);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:100;animation:fade .2s;max-width:80%;text-align:center}
+.flex{display:flex}.between{justify-content:space-between}.center{align-items:center}.gap{gap:8px}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mb8{margin-bottom:8px}
+.t2{color:var(--text-2)}.t3{color:var(--text-3)}.sm{font-size:12px}.xs{font-size:11px}
+.right{text-align:right}.bold{font-weight:600}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.pill{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;background:#f0f2f7;color:var(--text-2)}
+@media (min-width:768px){
+  .container{max-width:760px;padding:0 20px}
+  .container.wide{max-width:1100px}
+  .stat-grid{grid-template-columns:repeat(5,1fr);gap:12px}
+  .kpi-grid{grid-template-columns:repeat(6,1fr)}
+  .cust-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cust-item{margin:0}
+  .perf-grid{grid-template-columns:1fr 1fr}
+  .report-body{padding:20px}
+  .login-card{padding:32px}
+}
+@media (min-width:1024px){
+  body{background:var(--bg)}
+  .app-shell.has-nav{flex-direction:row;padding-bottom:0}
+  .sidebar{display:flex;flex-direction:column;width:var(--sidebar-w);background:#fff;border-right:1px solid var(--border);position:sticky;top:0;height:100vh;flex-shrink:0}
+  .bottom-nav{display:none}
+  .fab{display:none}
+  .main{flex:1;min-width:0;max-width:none}
+  .header{padding:16px 28px}
+  .content{padding:20px 28px}
+  .container{max-width:960px;padding:0 28px}
+  .container.wide{max-width:1200px}
+  .greeting{padding:20px 0 8px}
+  .stat-grid{grid-template-columns:repeat(5,1fr);gap:14px;padding:4px 0}
+  .stat{padding:16px}
+  .stat .num{font-size:26px}
+  .quick-row{padding:14px 0 4px;gap:12px}
+  .quick{padding:14px 8px}
+  .quick .ico{width:44px;height:44px;font-size:22px}
+  .target-card{padding:18px}
+  .target-card .tc-val{font-size:28px}
+  .target-card .tc-pct{font-size:30px}
+  .card{padding:18px}
+  .card-title{font-size:16px}
+  .cust-list{grid-template-columns:1fr 1fr;gap:12px}
+  .cust-item{padding:16px}
+  .perf-grid{grid-template-columns:repeat(3,1fr);gap:14px}
+  .perf-card{padding:18px}
+  .list-toolbar{top:64px}
+  .report-head{padding:28px 0 24px}
+  .report-head-inner{padding:0 28px}
+  .report-body{padding:24px 28px;max-width:960px}
+  .login-wrap{padding:40px}
+  .login-card{max-width:440px;padding:36px 32px}
+  .content{padding:24px 28px}
+  .section-title{font-size:14px;margin:22px 0 12px}
+  .form-group input,.form-group select,.form-group textarea{font-size:14px}
+  .contract-row{grid-template-columns:1.2fr .9fr 1fr auto}
+  .contract-row select,.contract-row input{padding:10px;font-size:14px}
+}
+@media (min-width:1440px){
+  .container{max-width:1200px}
+  .container.wide{max-width:1320px}
+  .report-body{max-width:1000px}
+  .perf-grid{grid-template-columns:repeat(3,1fr)}
+  .stat-grid{grid-template-columns:repeat(5,1fr)}
+}
+@media (min-width:1024px){
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#d0d5e0;border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:#b0b8c8}
+  .sidebar-nav::-webkit-scrollbar{width:6px}
+}
+/* v8: 合同编辑保存按钮 */
+.contract-edit-btn{display:inline-block;width:auto;margin-top:10px;padding:8px 22px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* =========================================================
+   久窝朋赞 销售 CRM  v4  —  入职分析 + 客户字段扩展 + 报告角色分离
+   ========================================================= */
+
+const BIZ_LINES = ['预付款包房','品牌加盟','智能体平台'];
+const BIZ_COLORS = {'预付款包房':'#4f7cff','品牌加盟':'#8b5cf6','智能体平台':'#22c55e'};
+const CONTRACT_TYPES = ['预付款包房','代运营','加盟'];
+const CONTRACT_COLORS = {'预付款包房':'#4f7cff','代运营':'#22c55e','加盟':'#f59e0b'};
+/* v6: 预付款包房回款金额计算：回款=签约金额÷折扣，取整 */
+function calcCollection(amount,discount){
+  const d=Number(discount)||1;
+  return d>0?Math.round(Number(amount)/d):Number(amount);
+}
+/* v4: 业务线 -> 主签约类型映射 */
+const BIZ_MAIN_TYPE = {'预付款包房':'预付款包房','品牌加盟':'加盟','智能体平台':'代运营'};
+
+const STATUS = {
+  new:       {label:'新客户',   cls:'s-new'},
+  potential: {label:'潜在需求', cls:'s-potential'},
+  valid:     {label:'有效',     cls:'s-valid'},
+  intent:    {label:'意向',     cls:'s-intent'},
+  review:    {label:'评审',     cls:'s-review'},
+  signed:    {label:'签约打款', cls:'s-signed'}
+};
+const STATUS_FLOW = ['new','potential','valid','intent','review','signed'];
+const VALID_HINT = {'预付款包房':'有效 = 谈到钱用途','品牌加盟':'有效 = 明确加盟意向','智能体平台':'有效 = 明确平台需求'};
+
+/* v10: 客户业务标签（代运营/预付款包房/加盟），基于业务线映射到签约类型
+   v12: UI 与客户管理的 .biz-tag 一致 */
+function custBizTag(c){
+  const tag = c && c.businessLine ? (BIZ_MAIN_TYPE[c.businessLine] || c.businessLine) : '';
+  if(!tag) return '';
+  const color = CONTRACT_COLORS[tag] || '#666';
+  return `<span class="biz-tag" style="background:${color}22;color:${color}">${tag}</span>`;
+}
+
+/* ---------- Storage: 本地数据缓存（DATA） + DB 读写器 ----------
+   v8: 改造为 API + 本地缓存架构。
+   - DATA 为内存缓存，登录时由后端拉取填充，定时刷新。
+   - DB.get 从 DATA 读取；DB.set 仅更新本地缓存。
+   - 所有写操作通过 api() 异步同步到后端 server.js。
+   - localStorage 不再使用。
+*/
+const DATA = {}; // 本地数据缓存
+const DB = {
+  get(k, def) { return DATA[k] || def; },
+  set(k, v) { DATA[k] = v; } // 仅更新本地缓存；写操作通过 API 同步到后端
+};
+
+/* ---------- API 辅助 ---------- */
+const API_BASE = ''; // 同域名下为空
+let state = {user:null,token:null,view:'login',params:{},toast:null,history:[]};
+let editingContracts = [];
+
+async function api(method, url, body) {
+  try {
+    const opts = {method, headers:{'Content-Type':'application/json'}};
+    if(state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
+    if(body) opts.body = JSON.stringify(body);
+    const res = await fetch(API_BASE + url, opts);
+    if(res.status===401){state.user=null;state.token=null;render();return null}
+    return await res.json();
+  } catch(e) { console.error('API error:',e); toast('网络错误'); return null; }
+}
+
+// 定时刷新数据（每30秒）
+async function refreshData() {
+  if(!state.token) return;
+  const r = await api('GET','/api/data');
+  if(r){
+    DATA.users=r.users;
+    DATA.customers=r.customers;
+    DATA.followups=r.followups;
+    DATA.reports=r.reports;
+    DATA.nextPlans=r.nextPlans||{};
+    render();
+  }
+}
+let _refreshTimer;
+function startRefresh(){
+  if(_refreshTimer)clearInterval(_refreshTimer);
+  _refreshTimer=setInterval(refreshData,30000);
+}
+
+/* ---------- State ---------- */
+function toast(msg){state.toast=msg;render();setTimeout(()=>{state.toast=null;render()},1600)}
+function go(view,params={}){state.history.push({view:state.view,params:state.params});state.view=view;state.params=params;render();window.scrollTo(0,0)}
+function back(){if(state.history.length>0){const h=state.history.pop();state.view=h.view;state.params=h.params;render();window.scrollTo(0,0)}else{go('dashboard')}}
+
+/* ---------- Auth ---------- */
+/* v8: 登录改为异步 API 调用，登录成功后填充 DATA 缓存并启动定时刷新 */
+async function doLoginApi(u,p){
+  const r = await api('POST','/api/login',{username:u,password:p});
+  if(!r||!r.success){toast(r?.msg||'登录失败');return}
+  state.user=r.user;state.token=r.token;
+  DATA.users=r.data.users;
+  DATA.customers=r.data.customers;
+  DATA.followups=r.data.followups;
+  DATA.reports=r.data.reports;
+  DATA.nextPlans=r.data.nextPlans||{};
+  state.history=[];state.view='dashboard';state.params={};
+  startRefresh();render();window.scrollTo(0,0);
+}
+/* v8: logout 清除 token 和 DATA，停止 refresh timer */
+function logout(){
+  state.user=null;state.token=null;state.history=[];
+  DATA.users=[];DATA.customers=[];DATA.followups=[];DATA.reports=[];DATA.nextPlans={};
+  if(_refreshTimer)clearInterval(_refreshTimer);
+  go('login');
+}
+
+/* ---------- Helpers ---------- */
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const weekRange=()=>{const d=new Date();const day=d.getDay()||7;const mon=new Date(d);mon.setDate(d.getDate()-day+1);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const f=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');return{start:f(mon),end:f(sun)}};
+const monthStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')};
+const uid=()=>'id_'+Date.now()+Math.random().toString(36).slice(2,7);
+const avColor=name=>{const cs=['#4f7cff','#8b5cf6','#22c55e','#f59e0b','#ec4899','#06b6d4'];let h=0;for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);return cs[Math.abs(h)%cs.length]};
+const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* v4: 入职日期相关辅助函数 */
+function daysSinceHire(hireDate){
+  if(!hireDate)return 0;
+  const d=new Date(hireDate);const now=new Date();
+  return Math.max(0,Math.floor((now-d)/(1000*60*60*24)));
+}
+function isInProtection(hireDate){
+  if(!hireDate)return false;
+  return daysSinceHire(hireDate)<30;
+}
+function protectionBadge(hireDate){
+  if(!hireDate||!isInProtection(hireDate))return '';
+  return '<span class="protection-badge">🛡️ 保护期</span>';
+}
+
+function myCustomers(){let c=DB.get('customers',[]);return state.user.role==='admin'?c:c.filter(x=>x.salesId===state.user.id)}
+function myFollowups(){let f=DB.get('followups',[]);return state.user.role==='admin'?f:f.filter(x=>x.salesId===state.user.id)}
+function allSales(){return DB.get('users',[]).filter(u=>u.role==='sales')}
+
+/* contract helpers */
+function signedAmount(c){return (c.contracts||[]).reduce((s,ct)=>s+(Number(ct.amount)||0),0)}
+function contractTypes(c){return [...new Set((c.contracts||[]).map(ct=>ct.type))]}
+function isSigned(c){return (c.contracts||[]).length>0||c.status==='signed'}
+function contractStats(customers,monthFilter){
+  const r={total:0,collectionTotal:0,count:0,byType:{}};
+  CONTRACT_TYPES.forEach(t=>r.byType[t]={count:0,amount:0,collection:0});
+  const signedCustIds=new Set();
+  customers.forEach(c=>{
+    (c.contracts||[]).forEach(ct=>{
+      if(monthFilter && !((ct.date||'').startsWith(monthFilter))) return;
+      const amt=Number(ct.amount)||0;
+      const coll=ct.type==='预付款包房'?calcCollection(amt,ct.discount):amt;
+      r.total+=amt;
+      r.collectionTotal+=coll;
+      if(r.byType[ct.type]){r.byType[ct.type].count++;r.byType[ct.type].amount+=amt;r.byType[ct.type].collection+=coll}
+      signedCustIds.add(c.id);
+    });
+  });
+  r.count=signedCustIds.size;
+  return r;
+}
+function signedInRange(c,start,end){
+  return (c.contracts||[]).some(ct=>{
+    const d=ct.date||'';
+    if(start&&d<start)return false;
+    if(end&&d>end)return false;
+    return true;
+  });
+}
+/* v5: 按日期区间统计签约（管理看板时间筛选用） */
+function contractStatsInRange(customers,start,end){
+  const r={total:0,collectionTotal:0,count:0,byType:{}};
+  CONTRACT_TYPES.forEach(t=>r.byType[t]={count:0,amount:0,collection:0});
+  const signedCustIds=new Set();
+  customers.forEach(c=>{
+    (c.contracts||[]).forEach(ct=>{
+      const d=ct.date||'';
+      if(start&&d<start)return;
+      if(end&&d>end)return;
+      const amt=Number(ct.amount)||0;
+      const coll=ct.type==='预付款包房'?calcCollection(amt,ct.discount):amt;
+      r.total+=amt;
+      r.collectionTotal+=coll;
+      if(r.byType[ct.type]){r.byType[ct.type].count++;r.byType[ct.type].amount+=amt;r.byType[ct.type].collection+=coll}
+      signedCustIds.add(c.id);
+    });
+  });
+  r.count=signedCustIds.size;
+  return r;
+}
+/* v10: 销售转化分析 - 客户转化率 + 平均转化周期 */
+function daysBetween(a,b){
+  if(!a||!b)return 0;
+  const d1=new Date(a.slice(0,10));const d2=new Date(b.slice(0,10));
+  if(isNaN(d1.getTime())||isNaN(d2.getTime()))return 0;
+  return Math.max(0,Math.round((d2-d1)/86400000));
+}
+/* 单客户从创建到首签的天数 */
+function custCycleDays(c){
+  if(!isSigned(c))return 0;
+  const cts=(c.contracts||[]).filter(ct=>ct.date).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if(!cts.length)return 0;
+  return daysBetween(c.createdAt,cts[0].date);
+}
+/* 销售维度转化统计 */
+function salesConversionStats(customers){
+  const total=customers.length;
+  const signedCusts=customers.filter(c=>isSigned(c));
+  const signed=signedCusts.length;
+  const convRate=total>0?Math.round(signed/total*100):0;
+  const cycles=signedCusts.map(c=>custCycleDays(c)).filter(d=>d>0);
+  const avgCycle=cycles.length?Math.round(cycles.reduce((s,d)=>s+d,0)/cycles.length):0;
+  return {total,signed,convRate,avgCycle,intentCount:customers.filter(c=>c.status==='intent').length,validCount:customers.filter(c=>['valid','intent','review','signed'].includes(c.status)).length};
+}
+/* v5: 看板时间筛选 - 获取当前筛选区间 */
+function getDashRange(){
+  const f=state.params.dashRange||'today';
+  const today=todayStr();
+  if(f==='week'){const w=weekRange();return {type:'week',start:w.start,end:w.end,label:'本周',prefix:'本周'}}
+  if(f==='month'){
+    const d=new Date();const y=d.getFullYear();const mm=String(d.getMonth()+1).padStart(2,'0');
+    const lastDay=new Date(y,d.getMonth()+1,0).getDate();
+    return {type:'month',start:`${y}-${mm}-01`,end:`${y}-${mm}-${String(lastDay).padStart(2,'0')}`,label:'本月',prefix:'本月'};
+  }
+  if(f==='custom'){
+    const s=state.params.dashStart||'';const e=state.params.dashEnd||'';
+    return {type:'custom',start:s,end:e,label:s&&e?`${s} ~ ${e}`:'未选择',prefix:'区间内'};
+  }
+  return {type:'today',start:today,end:today,label:'今天',prefix:'今日'};
+}
+function setDashRange(type){
+  state.params.dashRange=type;
+  if(type!=='custom'){state.params.dashStart='';state.params.dashEnd=''}
+  render();
+}
+function setDashCustom(field,val){
+  state.params[field]=val;
+  state.params.dashRange='custom';
+  render();
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render(){
+  const app=document.getElementById('app');
+  if(!state.user){app.innerHTML=LoginView();return}
+  let html='';
+  const navViews=['dashboard','customers','reports','reportsW','reportsM','reportDetail','me','admin','team','userForm','customerDetail','customerForm','followupForm','hireAnalysis','changePassword','import'];
+  const showNav=navViews.includes(state.view);
+  if(state.view==='dashboard')html=DashboardView();
+  else if(state.view==='customers')html=CustomersView();
+  else if(state.view==='customerDetail')html=CustomerDetailView();
+  else if(state.view==='customerForm')html=CustomerFormView();
+  else if(state.view==='followupForm')html=FollowupFormView();
+  else if(state.view==='reports')html=ReportsView();
+  else if(state.view==='reportsW')html=WeeklyReportView();
+  else if(state.view==='reportsM')html=MonthlyReportView();
+  else if(state.view==='reportDetail')html=ReportDetailView();
+  else if(state.view==='me')html=MeView();
+  else if(state.view==='admin')html=AdminView();
+  else if(state.view==='team')html=TeamView();
+  else if(state.view==='userForm')html=UserFormView();
+  else if(state.view==='hireAnalysis')html=HireAnalysisView();
+  else if(state.view==='changePassword')html=ChangePasswordView();
+  else if(state.view==='import')html=ImportView();
+  const isAdmin=state.user.role==='admin';
+  app.innerHTML=`<div class="app-shell ${showNav?'has-nav':''}">${showNav?SidebarNav(isAdmin):''}<main class="main">${html}</main></div>${showNav?BottomNav(isAdmin):''}${state.toast?`<div class="toast">${state.toast}</div>`:''}`;
+}
+
+/* ---------- Login ---------- */
+function LoginView(){
+  return `<div class="login-wrap">
+    <div class="login-logo">🏨</div>
+    <div class="login-title">久窝朋赞 CRM</div>
+    <div class="login-card">
+      <h2>账号登录</h2>
+      <div class="field"><label>用户名</label><input id="lg-user" type="text" placeholder="请输入用户名" autocomplete="off"></div>
+      <div class="field"><label>密码</label><input id="lg-pass" type="password" placeholder="请输入密码" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="btn btn-primary" onclick="doLogin()">登 录</button>
+    </div>
+  </div>`;
+}
+/* v8: doLogin 改为调用异步 doLoginApi */
+function doLogin(){
+  const u=$('#lg-user').value.trim(),p=$('#lg-pass').value.trim();
+  if(!u||!p){toast('请输入用户名和密码');return}
+  doLoginApi(u,p);
+}
+
+/* ---------- Sidebar (PC) ---------- */
+function SidebarNav(isAdmin){
+  const u=state.user;const v=state.view;
+  const mainItems=[
+    {key:'dashboard',ico:'🏠',label:'工作台'},
+    {key:'customers',ico:'👥',label:'客户管理'},
+    {key:'reports',ico:'📊',label:'报告中心'}
+  ];
+  const adminItems=isAdmin?[
+    {key:'admin',ico:'👔',label:'管理看板'},
+    {key:'hireAnalysis',ico:'📅',label:'入职产出分析'}
+  ]:[];
+  const userItem={key:'me',ico:'⚙️',label:'我的'};
+  const items=[...mainItems,...adminItems,userItem];
+  const isActive=k=>{
+    if(k==='reports'&&['reports','reportsW','reportsM','reportDetail'].includes(v))return true;
+    if(k==='admin'&&['admin','team','userForm'].includes(v))return true;
+    if(k==='hireAnalysis'&&v==='hireAnalysis')return true;
+    return v===k;
+  };
+  return `<aside class="sidebar">
+    <div class="sidebar-logo"><div class="logo-ico">🏨</div><div>久窝朋赞 CRM</div></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">主导航</div>
+      ${items.map(it=>`<div class="sidebar-item ${isActive(it.key)?'active':''}" onclick="go('${it.key}')"><span class="si">${it.ico}</span>${it.label}</div>`).join('')}
+    </nav>
+    <div class="sidebar-user"><div class="avatar" style="background:${avColor(u.name)}">${u.name[0]}</div><div><div style="font-weight:600;font-size:13px">${u.name} ${u.role==='sales'?protectionBadge(u.hireDate):''}</div><div class="xs t3">${u.role==='admin'?'管理员':u.businessLine}</div></div></div>
+  </aside>`;
+}
+
+/* ---------- Dashboard ---------- */
+function DashboardView(){
+  const u=state.user;
+  const cs=myCustomers();
+  const fs=myFollowups();
+  const today=todayStr();
+  const m=monthStr();
+  const todayFs=fs.filter(f=>f.followDate===today);
+  const todayNewCustomers=cs.filter(c=>c.createdAt===today);
+  const todayHistoryFs=todayFs.filter(f=>{const c=cs.find(x=>x.id===f.customerId);return c&&c.createdAt!==today});
+  const wr=weekRange();
+  const weekFs=fs.filter(f=>f.followDate>=wr.start&&f.followDate<=wr.end);
+  const validCount=cs.filter(c=>['valid','intent','review','signed'].includes(c.status)).length;
+  const intentCount=cs.filter(c=>c.status==='intent').length;
+  const signedCustomers=cs.filter(c=>isSigned(c));
+  const mStats=contractStats(cs,m);
+  const isAdmin=u.role==='admin';
+  const target=u.monthlyTarget||0;
+  const completion=target>0?Math.min(Math.round(mStats.total/target*100),999):0;
+
+  let html=`<div class="header">
+    <div class="h-left"><div class="avatar" style="background:${avColor(u.name)}">${u.name[0]}</div>
+    <div><div style="font-weight:600;font-size:15px">${u.name} ${u.role==='sales'?protectionBadge(u.hireDate):''}</div>${u.role==='admin'?'<span class="xs t3">管理员</span>':`<span class="biz-tag">${u.businessLine}</span>`}</div></div>
+    <div class="h-right"><button class="back" onclick="go('${isAdmin?'admin':'me'}')" style="font-size:18px">⚙️</button></div>
+  </div>`;
+
+  html+=`<div class="content"><div class="container ${isAdmin?'wide':''}">
+    <div class="greeting"><div class="name">${isAdmin?'今日工作台':u.name+'，加油'}</div><div class="date">${today} · ${['周日','周一','周二','周三','周四','周五','周六'][new Date().getDay()]}</div></div>`;
+
+  if(!isAdmin){
+    html+=`<div class="target-card">
+      <div class="tc-top">
+        <div><div class="tc-lbl">本月目标</div><div class="tc-val">${target}万</div></div>
+        <div style="text-align:right"><div class="tc-lbl">完成率</div><div class="tc-pct">${completion}%</div></div>
+      </div>
+      <div class="tc-bar"><span style="width:${Math.min(completion,100)}%"></span></div>
+      <div class="tc-types">
+        ${CONTRACT_TYPES.map(t=>`<div><div class="tt-num">${mStats.byType[t].amount}万</div><div class="tt-lbl">${t}·${mStats.byType[t].count}单</div></div>`).join('')}
+      </div>
+      <div style="margin-top:10px;font-size:12px;opacity:.85">已签约 ${signedCustomers.length} 家 · 签约总额 ${mStats.total}万 / ${target}万</div>
+    </div>`;
+  }
+
+  html+=`<div class="stat-grid">
+    <div class="stat blue"><div class="num">${todayNewCustomers.length}</div><div class="lbl">今日新增客户</div></div>
+    <div class="stat amber"><div class="num">${todayHistoryFs.length}</div><div class="lbl">今日跟进历史客户</div></div>
+    <div class="stat purple"><div class="num">${intentCount}</div><div class="lbl">意向客户</div></div>
+    <div class="stat green"><div class="num">${mStats.total}万</div><div class="lbl">本月签约额</div><div class="sub">${signedCustomers.length}家 · ${completion}%完成</div></div>
+    <div class="stat orange"><div class="num">${mStats.collectionTotal}万</div><div class="lbl">应回款总额</div><div class="sub">${mStats.collectionTotal>mStats.total?`预付款包房折扣回款`:`无折扣回款`}</div></div>
+  </div>
+
+  <div class="quick-row">
+    <div class="quick" onclick="go('customerForm',{mode:'add'})"><div class="ico" style="background:var(--primary-light)">➕</div><div class="t">新增客户</div></div>
+    <div class="quick" onclick="go('followupForm')"><div class="ico" style="background:var(--success-light)">📝</div><div class="t">录入跟进</div></div>
+    <div class="quick" onclick="go('reports')"><div class="ico" style="background:var(--warn-light)">📊</div><div class="t">日报</div></div>
+    <div class="quick" onclick="go('customers')"><div class="ico" style="background:var(--purple-light)">👥</div><div class="t">客户</div></div>
+  </div>`;
+
+  if(!isAdmin){
+    const todayReport=DB.get('reports',[]).find(r=>r.salesId===u.id&&r.date===today);
+    html+=`<div class="section-title">今日日报 ${todayReport?'<span class="more">已生成 ✓</span>':'<span class="more" onclick="genTodayReport()">立即生成 →</span>'}</div>
+      <div class="card card-tap" onclick="${todayReport?`go('reportDetail',{id:'${todayReport.id}'})`:`genTodayReport()`}">
+        <div class="card-row">
+          <div><div class="card-title">${u.businessLine} · 日报</div>
+          <div class="card-sub">${today} · 新增${todayNewCustomers.length} · 历史${todayHistoryFs.length} · 有效${todayFs.filter(f=>f.statusChange==='valid').length} · 签约${todayFs.filter(f=>f.statusChange==='signed').length}</div></div>
+          <div style="color:var(--primary);font-size:20px">›</div>
+        </div>
+      </div>
+      <div class="section-title">今日跟进</div>`;
+    if(todayFs.length===0)html+=`<div class="card"><div class="empty"><div class="em-ico">📋</div><p>今天还没有跟进记录<br>拜访完客户记得及时录入</p></div></div>`;
+    else todayFs.forEach(f=>{
+      const cust=cs.find(c=>c.id===f.customerId);
+      const isNew=cust&&cust.createdAt===today;
+      const typeTag=isNew?'<span class="cust-type-tag new">新客户</span>':'<span class="cust-type-tag history">历史客户</span>';
+      html+=`<div class="card card-tap" onclick="go('customerDetail',{id:'${f.customerId}'})">
+        <div class="card-row"><div class="card-title">${f.content.length>40?f.content.slice(0,40)+'...':f.content}</div><span class="status ${STATUS[f.statusChange]?.cls||'s-new'}">${STATUS[f.statusChange]?.label||'跟进'}</span></div>
+        <div class="card-sub sm" style="margin-top:6px">${f.customerName} ${typeTag}</div>
+        ${f.nextAction?`<div class="tl-next">下一步：${f.nextAction}</div>`:''}
+      </div>`;
+    });
+  } else {
+    html+=`<div class="section-title">团队签约概览 <span class="more" onclick="go('team')">详情 →</span></div>`;
+    allSales().forEach(s=>{
+      const sc=DB.get('customers',[]).filter(c=>c.salesId===s.id);
+      const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id&&f.followDate===today);
+      const ms=contractStats(sc,m);
+      const tgt=s.monthlyTarget||0;
+      const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+      html+=`<div class="card card-tap" onclick="go('team')">
+        <div class="card-row">
+          <div class="avatar" style="background:${avColor(s.name)};width:40px;height:40px;font-size:15px">${s.name[0]}</div>
+          <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> 今日 ${sf.length} · 签约 ${ms.total}万/${tgt}万</div></div>
+          <div style="text-align:right"><div class="bold" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</div><div class="xs t3">完成率</div></div>
+        </div>
+      </div>`;
+    });
+    html+=`<div class="section-title">客户状态分布</div><div class="card">`;
+    const allCs=DB.get('customers',[]);
+    STATUS_FLOW.forEach(k=>{const n=allCs.filter(c=>c.status===k).length;
+      const total=allCs.length||1;
+      html+=`<div style="margin-bottom:10px"><div class="flex between sm mb8"><span><span class="status ${STATUS[k].cls}">${STATUS[k].label}</span></span><span class="t2">${n} 个 · ${Math.round(n/total*100)}%</span></div><div class="progress"><span style="width:${n/total*100}%;background:${{'new':'#9aa3b8','potential':'#60a5fa','valid':'#f59e0b','intent':'#8b5cf6','review':'#ec4899','signed':'#22c55e'}[k]}"></span></div></div>`});
+    html+=`</div>`;
+  }
+  html+=`</div></div>`;
+  return html;
+}
+
+/* ---------- Customers List ---------- */
+function CustomersView(){
+  const cs=myCustomers();
+  const q=state.params.q||'';const biz=state.params.biz||'';const st=state.params.st||'';
+  let list=cs;
+  if(q)list=list.filter(c=>c.name.includes(q)||(c.contactName||'').includes(q));
+  if(biz)list=list.filter(c=>c.businessLine===biz);
+  if(st)list=list.filter(c=>c.status===st);
+  let html=`<div class="header"><div class="h-left"><h1>客户管理</h1></div>
+    <div class="h-right">${state.user.role==='admin'?`<button class="back" onclick="go('import')" style="font-size:13px;margin-right:8px;padding:6px 10px">📥导入</button>`:''}<button class="back" onclick="go('customerForm',{mode:'add'})" style="font-size:20px">➕</button></div></div>`;
+  html+=`<div class="content"><div class="container wide">
+    <div class="list-toolbar">
+      <input class="list-search" id="cust-search" placeholder="搜索客户名称/联系人" value="${esc(q)}" oninput="onCustSearch(this.value)">
+      <div class="filter-bar"><button class="chip ${!biz?'active':''}" onclick="filterCustomers('','biz')">全部业务</button>`;
+  BIZ_LINES.forEach(b=>html+=`<button class="chip ${biz===b?'active':''}" onclick="filterCustomers('${b}','biz')">${b}</button>`);
+  html+=`</div><div class="filter-bar">`;
+  html+=`<button class="chip ${!st?'active':''}" onclick="filterCustomers('','st')">全部状态</button>`;
+  STATUS_FLOW.forEach(k=>html+=`<button class="chip ${st===k?'active':''}" onclick="filterCustomers('${k}','st')">${STATUS[k].label}</button>`);
+  html+=`</div></div>`;
+  html+=`<div class="cust-list" id="cust-list">`;
+  html+=renderCustList(list);
+  html+=`</div>`;
+  html+=`</div></div>`;
+  html+=`<div class="fab" onclick="go('customerForm',{mode:'add'})">+</div>`;
+  return html;
+}
+function renderCustList(list){
+  if(list.length===0)return `<div class="empty" style="grid-column:1/-1"><div class="em-ico">👥</div><p>暂无客户<br>点击右上角 + 新增</p></div>`;
+  return list.map(c=>{
+    const lastF=myFollowups().filter(f=>f.customerId===c.id).sort((a,b)=>b.followDate.localeCompare(a.followDate))[0];
+    const amt=signedAmount(c);
+    const hasContracts=c.contracts&&c.contracts.length>0;
+    /* v17-fix: 客户列表中合同分类型展示：预付款包房显示回款，代运营/加盟显示收款 */
+    let contractHtml='';
+    if(hasContracts){
+      contractHtml=`<div class="contract-mini-list" style="margin-top:6px;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        ${c.contracts.map(ct=>{
+          const isPrepaid=ct.type==='预付款包房';
+          const coll=isPrepaid?calcCollection(ct.amount,ct.discount):Number(ct.amount);
+          const label=isPrepaid?'回款':'收款';
+          const color=isPrepaid?'#f59e0b':'#22c55e';
+          return `<div class="contract-mini" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+            <span class="ctype-pill" style="background:${CONTRACT_COLORS[ct.type]}22;color:${CONTRACT_COLORS[ct.type]}">${ct.type}</span>
+            <span class="amount" style="margin-top:0;font-size:13px">${ct.amount}万</span>
+            <span class="xs" style="color:${color};font-weight:600">${label}${coll}万</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+    return `<div class="cust-item" onclick="go('customerDetail',{id:'${c.id}'})">
+      <div class="cust-info"><div class="cn">${esc(c.name)}</div>
+      <div class="cm"><span class="pill" style="background:${BIZ_COLORS[c.businessLine]}22;color:${BIZ_COLORS[c.businessLine]}">${c.businessLine}</span>${lastF?` · ${lastF.followDate}跟进`:''}</div>
+      ${c.fundUsage?`<div class="cm"><span class="xs t3">资金用途：</span><span class="xs t2">${esc(c.fundUsage)}</span></div>`:''}
+      </div>
+      <div class="cust-meta"><span class="status ${STATUS[c.status].cls}">${STATUS[c.status].label}</span>
+      ${hasContracts?contractHtml:`<div class="amount ${amt?'':'muted'}" style="margin-top:5px">${amt?amt+'万':'-'}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+/* v19: 批量导入客户 */
+let importPreview = [];
+const STATUS_MAP={'新客户':'new','潜在需求':'potential','有效':'valid','意向':'intent','评审':'review','签约打款':'signed','new':'new','potential':'potential','valid':'valid','intent':'intent','review':'review','signed':'signed'};
+function ImportView(){
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="back()">‹</button><h1>批量导入客户</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="form-group"><label>① 下载模板</label>
+        <div class="xs t3" style="margin-top:4px;margin-bottom:8px">按模板格式填写客户信息，避免格式错误</div>
+        <button class="btn btn-ghost" onclick="downloadImportTemplate()">📥 下载CSV模板</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="form-group"><label>② 上传CSV文件</label>
+        <input type="file" id="import-file" accept=".csv,text/csv" onchange="onImportFileSelected(this)" style="margin-top:6px">
+        <div class="xs t3" style="margin-top:6px">支持 .csv 格式（UTF-8），第一行为表头</div>
+      </div>
+    </div>`;
+  if(importPreview.length>0){
+    const validCount=importPreview.filter(r=>r._valid).length;
+    const invalidCount=importPreview.length-validCount;
+    html+=`<div class="card">
+      <div class="flex between center">
+        <div><span class="bold">预览：共 ${importPreview.length} 行</span><br><span class="sm" style="color:var(--success)">✓ 有效 ${validCount}</span> ${invalidCount?`<span class="sm" style="color:var(--danger)"> ✗ 无效 ${invalidCount}</span>`:''}</div>
+        <button class="btn btn-primary" onclick="doImportCustomers()">导入 ${validCount} 个客户</button>
+      </div>
+      <div style="margin-top:12px;max-height:300px;overflow:auto;border:1px solid var(--border);border-radius:8px">
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <thead style="background:var(--bg);position:sticky;top:0"><tr><th style="padding:6px;text-align:left">#</th><th style="padding:6px;text-align:left">客户名称</th><th style="padding:6px;text-align:left">业务线</th><th style="padding:6px;text-align:left">状态</th><th style="padding:6px;text-align:left">提示</th></tr></thead>
+          <tbody>${importPreview.map((r,i)=>`<tr style="border-top:1px solid var(--border)"><td style="padding:6px">${i+1}</td><td style="padding:6px">${esc(r.name||'')} ${r._valid?'':`<span style="color:var(--danger)">⚠</span>`}</td><td style="padding:6px">${esc(r.businessLine||'')}</td><td style="padding:6px">${esc(r.status||'')}</td><td style="padding:6px;color:var(--text-2);font-size:11px">${r._error?esc(r._error):'OK'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }
+  html+=`<div class="card"><div class="section-title" style="font-size:14px">导入说明</div><div class="xs t3" style="line-height:1.8">
+    • <b>客户名称</b>：必填<br>• <b>业务线</b>：预付款包房 / 品牌加盟 / 智能体平台<br>
+    • <b>状态</b>：新客户/潜在需求/有效/意向/评审/签约打款<br>• <b>意向金额</b>：数字（万），仅"意向"状态生效<br>
+    • 导入客户自动分配给对应业务线销售</div></div></div></div>`;
+  return html;
+}
+function downloadImportTemplate(){
+  const header='客户名称,联系人,联系电话,业务线,状态,资金用途,意向金额,备注\n';
+  const sample='示例酒店A,王总,13800138000,预付款包房,有效,预付款（房租）,20,从侧面了解到酒店欠房租\n示例酒店B,李总,13900139000,品牌加盟,意向,加盟费,,品牌加盟意向强烈\n';
+  const blob=new Blob(['\ufeff'+header+sample],{type:'text/csv;charset=utf-8'});
+  const link=document.createElement('a');link.download='客户导入模板.csv';link.href=URL.createObjectURL(blob);link.style.display='none';
+  document.body.appendChild(link);link.click();setTimeout(()=>{document.body.removeChild(link);URL.revokeObjectURL(link.href)},300);
+  toast('模板已下载');
+}
+function parseCSVLine(line){
+  const result=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){const ch=line[i];
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++}else{inQ=!inQ}}
+    else if(ch===','&&!inQ){result.push(cur);cur=''}
+    else{cur+=ch}
+  }
+  result.push(cur);return result.map(s=>s.trim());
+}
+function onImportFileSelected(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    let text=e.target.result;
+    if(text.charCodeAt(0)===0xFEFF)text=text.slice(1);
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){toast('文件为空或只有表头');return}
+    const headers=parseCSVLine(lines[0]);
+    const idx=(name)=>{const i=headers.findIndex(h=>h.includes(name));return i};
+    const iName=headers.findIndex(h=>h.includes('客户名称')||h.includes('名称'));const iContact=idx('联系人');
+    const iPhone=headers.findIndex(h=>h.includes('电话')||h.includes('手机'));const iBiz=idx('业务线');const iStatus=idx('状态');
+    const iFund=headers.findIndex(h=>h.includes('资金用途')||h.includes('用途'));const iIntent=headers.findIndex(h=>h.includes('意向金额')||h.includes('意向'));
+    const iRemark=headers.findIndex(h=>h.includes('备注')||h.includes('注'));
+    importPreview=lines.slice(1).map(line=>{
+      const cols=parseCSVLine(line);const name=cols[iName>=0?iName:0]||'';
+      const biz=cols[iBiz>=0?iBiz:-1]||'预付款包房';const statusRaw=cols[iStatus>=0?iStatus:-1]||'new';
+      const status=STATUS_MAP[statusRaw]||'new';
+      const row={name,contactName:iContact>=0?(cols[iContact]||''):'',contactPhone:iPhone>=0?(cols[iPhone]||''):'',
+        businessLine:BIZ_LINES.includes(biz)?biz:'预付款包房',status,
+        fundUsage:iFund>=0?(cols[iFund]||''):'',intendedAmount:iIntent>=0&&cols[iIntent]?Number(cols[iIntent])||0:0,
+        remark:iRemark>=0?(cols[iRemark]||''):''};
+      if(!name){row._valid=false;row._error='客户名称为空'}
+      else if(!BIZ_LINES.includes(biz)){row._valid=false;row._error='业务线无效'}
+      else{row._valid=true}
+      return row;
+    });
+    render();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+async function doImportCustomers(){
+  const valid=importPreview.filter(r=>r._valid);
+  if(!valid.length){toast('没有有效数据可导入');return}
+  toast('正在导入...');
+  const sales=DB.get('users',[]).filter(u=>u.role==='sales');
+  const bizToSales={};sales.forEach(s=>{if(s.businessLine&&!bizToSales[s.businessLine])bizToSales[s.businessLine]=s});
+  const today=todayStr();
+  const customers=valid.map(r=>{
+    const s=bizToSales[r.businessLine];
+    return {id:'id_'+Date.now()+Math.random().toString(36).slice(2,7),name:r.name,contactName:r.contactName,contactPhone:r.contactPhone,
+      businessLine:r.businessLine,status:r.status,salesId:s?s.id:(state.user.role==='sales'?state.user.id:''),
+      salesName:s?s.name:(state.user.role==='sales'?state.user.name:''),remark:r.remark,
+      intendedAmount:r.status==='intent'?r.intendedAmount:0,contracts:[],fundUsage:r.fundUsage,docsCompletedDate:'',createdAt:today,updatedAt:today};
+  });
+  const r=await api('POST','/api/customers/bulk',{customers});
+  if(r&&r.success){DATA.customers=r.customers;importPreview=[];toast(`成功导入 ${customers.length} 个客户`);go('customers')}
+  else{toast('导入失败：'+(r&&r.msg||'未知错误'))}
+}
+
+/* 搜索：只更新列表DOM，保持输入框焦点 */
+function onCustSearch(v){
+  state.params.q=v;
+  const cs=myCustomers();
+  const q=v;const biz=state.params.biz||'';const st=state.params.st||'';
+  let list=cs;
+  if(q)list=list.filter(c=>c.name.includes(q)||(c.contactName||'').includes(q));
+  if(biz)list=list.filter(c=>c.businessLine===biz);
+  if(st)list=list.filter(c=>c.status===st);
+  const el=document.getElementById('cust-list');
+  if(el)el.innerHTML=renderCustList(list);
+}
+function filterCustomers(v,type){
+  if(type==='biz')state.params.biz=(state.params.biz===v?'':v);
+  if(type==='st')state.params.st=(state.params.st===v?'':v);
+  // 局部更新列表
+  const cs=myCustomers();
+  const q=state.params.q||'';const biz=state.params.biz||'';const st=state.params.st||'';
+  let list=cs;
+  if(q)list=list.filter(c=>c.name.includes(q)||(c.contactName||'').includes(q));
+  if(biz)list=list.filter(c=>c.businessLine===biz);
+  if(st)list=list.filter(c=>c.status===st);
+  // 更新chip状态
+  $$('.filter-bar').forEach((bar,idx)=>{
+    bar.querySelectorAll('.chip').forEach(chip=>{
+      const txt=chip.textContent.trim();
+      let active=false;
+      if(idx===0){active=(!biz&&txt==='全部业务')||(biz===txt)}
+      else{active=(!st&&txt==='全部状态')||(st===txt)}
+      chip.classList.toggle('active',active);
+    });
+  });
+  const el=document.getElementById('cust-list');
+  if(el)el.innerHTML=renderCustList(list);
+}
+
+/* ---------- Customer Detail ---------- */
+function CustomerDetailView(){
+  const c=DB.get('customers',[]).find(x=>x.id===state.params.id);
+  if(!c)return`<div class="content"><div class="empty">客户不存在</div></div>`;
+  const fs=DB.get('followups',[]).filter(f=>f.customerId===c.id).sort((a,b)=>b.followDate.localeCompare(a.followDate));
+  const amt=signedAmount(c);const types=contractTypes(c);
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('customers')">‹</button><h1>客户详情</h1></div>
+    <div class="h-right"><button class="back" onclick="go('customerForm',{mode:'edit',id:'${c.id}'})" style="font-size:14px;color:var(--primary)">编辑</button></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="flex between center">
+        <div style="font-size:20px;font-weight:700">${esc(c.name)}</div>
+        <span class="status ${STATUS[c.status].cls}">${STATUS[c.status].label}</span>
+      </div>
+      <div class="sm t2" style="margin-top:6px"><span class="pill" style="background:${BIZ_COLORS[c.businessLine]}22;color:${BIZ_COLORS[c.businessLine]}">${c.businessLine}</span> · 跟进销售 ${c.salesName}</div>
+      <div class="divider"></div>
+      <div class="form-row" style="gap:16px">
+        <div><div class="xs t3">联系人</div><div class="bold" style="margin-top:2px">${esc(c.contactName)||'-'}</div></div>
+        <div><div class="xs t3">联系电话</div><div class="bold" style="margin-top:2px">${esc(c.contactPhone)||'-'}</div></div>
+      </div>`;
+  /* v4: 资金用途 */
+  if(c.fundUsage){
+    html+=`<div class="divider"></div><div class="xs t3">资金用途</div><div class="sm" style="margin-top:4px;line-height:1.6">${esc(c.fundUsage)}</div>`;
+  }
+  /* v4: 资料收集完毕时间 */
+  if(c.docsCompletedDate){
+    html+=`<div class="divider"></div><div class="flex between center"><span class="t2 sm">资料收集完毕时间</span><span class="bold" style="color:var(--primary)">${c.docsCompletedDate}</span></div>`;
+  }
+  if(c.intendedAmount>0&&c.status==='intent'){
+    html+=`<div class="divider"></div><div class="flex between center"><span class="t2 sm">意向金额</span><span class="bold" style="color:var(--purple)">${c.intendedAmount}万</span></div>`;
+  }
+  /* v8: 签约金额与折扣改为可编辑 input（仅已签约客户显示编辑区） */
+  if(types.length){
+    const canEdit = c.status==='signed' || (c.contracts&&c.contracts.length>0);
+    html+=`<div class="divider"></div><div class="xs t3">签约金额与折扣${canEdit?'<span class="xs t3" style="margin-left:6px">（可直接编辑）</span>':''}</div>`;
+    (c.contracts||[]).forEach((ct,idx)=>{
+      const isPrepaid=ct.type==='预付款包房';
+      const collAmt=isPrepaid?calcCollection(ct.amount,ct.discount):ct.amount;
+      /* v8: 每个合同独立展示：签约额 input + 折扣 input + 回款额动态显示 */
+      html+=`<div style="margin-top:6px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <div class="flex between center">
+          <span><span class="pill" style="background:${CONTRACT_COLORS[ct.type]}22;color:${CONTRACT_COLORS[ct.type]}">${ct.type}</span> <span class="sm t2">${ct.date||''}</span></span>
+          <span style="display:flex;gap:6px;align-items:center">
+            <input type="number" data-contract-idx="${idx}" data-field="amount" value="${ct.amount}" style="width:60px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:13px;text-align:right" onchange="updateContractField(this)">
+            <span class="sm">万</span>
+          </span>
+        </div>
+        ${isPrepaid ? `<div class="flex between center" style="margin-top:3px">
+          <span class="sm t3">折扣</span>
+          <span style="display:flex;gap:6px;align-items:center">
+            <input type="number" data-contract-idx="${idx}" data-field="discount" value="${ct.discount||1}" step="0.01" min="0.1" max="1" style="width:50px;padding:4px;border:1px solid var(--border);border-radius:4px;font-size:13px;text-align:right" onchange="updateContractField(this)">
+            <span class="sm t3" style="margin-left:4px">回款 <span id="coll-${idx}" style="color:#f59e0b;font-weight:600">${collAmt}万</span></span>
+          </span>
+        </div>` : ''}
+      </div>`;
+    });
+    if(canEdit){
+      html+=`<button class="btn btn-sm btn-primary contract-edit-btn" onclick="saveContractChanges()">保存修改</button>`;
+    }
+  }
+  if(c.remark){html+=`<div class="divider"></div><div class="xs t3">备注</div><div class="sm" style="margin-top:4px;line-height:1.6">${esc(c.remark)}</div>`}
+  html+=`</div>
+    <div class="section-title">跟进记录 <span class="more" onclick="go('followupForm',{customerId:'${c.id}'})">+ 录入</span></div>
+    <div class="card">`;
+  if(fs.length===0)html+=`<div class="empty" style="padding:24px"><div class="em-ico">📝</div><p>暂无跟进记录</p></div>`;
+  else{html+=`<div class="timeline">`;
+  fs.forEach(f=>{const ts=(f.createdAt||'').split(' ');html+=`<div class="tl-item"><div class="tl-date">${f.followDate} ${ts[1]||''} · ${f.salesName}</div>
+    ${f.statusChange?`<div class="tl-status"><span class="status ${STATUS[f.statusChange].cls}">${STATUS[f.statusChange].label}</span></div>`:''}
+    <div class="tl-content">${esc(f.content)}</div>
+    ${f.nextAction?`<div class="tl-next">📌 下一步：${esc(f.nextAction)}</div>`:''}</div>`});
+  html+=`</div>`}
+  html+=`</div>
+    <div style="height:16px"></div>
+    <button class="btn btn-outline" onclick="go('followupForm',{customerId:'${c.id}'})">+ 录入新跟进</button>
+  </div></div>`;
+  return html;
+}
+
+/* v8: 合同字段编辑 - 实时更新回款显示 */
+function updateContractField(el){
+  const idx=+el.dataset.contractIdx;
+  const field=el.dataset.field;
+  const val=Number(el.value);
+  const c=DB.get('customers',[]).find(x=>x.id===state.params.id);
+  if(!c||!c.contracts||!c.contracts[idx])return;
+  c.contracts[idx][field]=val;
+  /* 更新回款显示 */
+  if(field==='amount'||field==='discount'){
+    const collEl=document.getElementById('coll-'+idx);
+    if(collEl&&c.contracts[idx].type==='预付款包房'){
+      collEl.textContent=calcCollection(c.contracts[idx].amount,c.contracts[idx].discount)+'万';
+    }
+  }
+}
+/* v8: 保存合同修改 - 同步 DOM 到本地 DATA 并 API 调用 */
+function saveContractChanges(){
+  const c=DB.get('customers',[]).find(x=>x.id===state.params.id);
+  if(!c)return;
+  /* 从 DOM 同步所有合同字段 */
+  document.querySelectorAll('[data-contract-idx]').forEach(el=>{
+    const idx=+el.dataset.contractIdx;
+    const field=el.dataset.field;
+    if(c.contracts[idx])c.contracts[idx][field]=Number(el.value);
+  });
+  /* 更新本地 DATA（c 已是引用，直接确保 DATA.customers 最新） */
+  const cs=DB.get('customers',[]);
+  const i=cs.findIndex(x=>x.id===c.id);
+  if(i>=0){cs[i]=c;DATA.customers=cs}
+  /* API 保存 */
+  api('PUT','/api/customers/'+c.id,{contracts:c.contracts});
+  toast('签约信息已保存');
+  render();
+}
+
+/* ---------- Customer Form ---------- */
+function CustomerFormView(){
+  const edit=state.params.mode==='edit';
+  const c=edit?(DB.get('customers',[]).find(x=>x.id===state.params.id)||{}):{};
+  editingContracts = edit ? JSON.parse(JSON.stringify(c.contracts||[])) : [];
+  const isAdmin=state.user.role==='admin';
+  const myBiz=state.user.businessLine;
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="back()">‹</button><h1>${edit?'编辑客户':'新增客户'}</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="form-group"><label>客户/酒店名称 <span class="req">*</span></label><input id="cf-name" value="${esc(c.name||'')}" placeholder="如：东莞嘉映玥酒店"></div>
+      <div class="form-row">
+        <div class="form-group"><label>联系人</label><input id="cf-contact" value="${esc(c.contactName||'')}" placeholder="联系人"></div>
+        <div class="form-group"><label>联系电话</label><input id="cf-phone" value="${esc(c.contactPhone||'')}" placeholder="电话"></div>
+      </div>
+      <div class="form-group"><label>业务线 <span class="req">*</span></label>
+        <select id="cf-biz">${BIZ_LINES.map(b=>`<option value="${b}" ${c.businessLine===b||(!c.businessLine&&b===myBiz)?'selected':''}>${b}</option>`).join('')}</select>
+        ${!isAdmin&&c.businessLine&&c.businessLine!==myBiz?`<div class="xs t3" style="margin-top:4px;color:var(--warn)">⚠️ 此客户属于${c.businessLine}业务线，保存后将分配给该业务线销售跟进</div>`:''}
+      </div>
+      <div class="form-group"><label>客户状态</label>
+        <select id="cf-status">${STATUS_FLOW.map(k=>`<option value="${k}" ${c.status===k||(!c.status&&k==='new')?'selected':''}>${STATUS[k].label}</option>`).join('')}</select>
+      </div>
+      <div class="form-group" id="cf-intent-group" style="display:${c.status==='intent'?'block':'none'}"><label>意向金额（万）</label><input id="cf-intent" type="number" value="${c.intendedAmount||0}" placeholder="如：20" min="0"></div>
+      <div class="form-group"><label>资金用途</label><textarea id="cf-fundUsage" placeholder="如：预付款（房租缴纳）、代运营服务费、装修周转等">${esc(c.fundUsage||'')}</textarea><div class="xs t3" style="margin-top:4px">客户资金的具体用途，便于评估风险与方案</div></div>
+      <div class="form-group"><label>资料收集完毕时间</label><input id="cf-docsDate" type="date" value="${c.docsCompletedDate||''}"><div class="xs t3" style="margin-top:4px">客户资料齐全的日期，留空表示尚未收集完毕</div></div>
+      <div class="form-group"><label>备注</label><textarea id="cf-remark" placeholder="客户背景、需求、风险等">${esc(c.remark||'')}</textarea></div>
+    </div>
+    <div class="card">
+      <div class="form-group"><label>签约合同 <span class="t3 sm">（已签约客户请添加合同明细）</span></label>
+        <div class="contract-list" id="contract-list"></div>
+        <div class="add-contract-btn" onclick="addContractRow()">+ 添加合同</div>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="saveCustomer(${edit?`'${c.id}'`:'null'})">保存客户</button>
+    ${edit?`<button class="btn btn-ghost" style="margin-top:8px" onclick="delCustomer('${c.id}')">删除客户</button>`:''}
+  </div></div>`;
+  setTimeout(()=>{renderContractList();bindStatusChange()},0);
+  return html;
+}
+function bindStatusChange(){
+  const sel=document.getElementById('cf-status');
+  if(!sel)return;
+  sel.addEventListener('change',()=>{
+    const g=document.getElementById('cf-intent-group');
+    if(g)g.style.display=sel.value==='intent'?'block':'none';
+  });
+}
+function renderContractList(){
+  const el=document.getElementById('contract-list');
+  if(!el)return;
+  if(editingContracts.length===0){el.innerHTML='<div class="sm t3" style="text-align:center;padding:8px">暂无合同，点击下方添加</div>';return}
+  el.innerHTML=editingContracts.map((c,i)=>{
+    const isPrepaid=c.type==='预付款包房';
+    const collAmt=isPrepaid?calcCollection(c.amount,c.discount):0;
+    const discountDisplay=isPrepaid?`<input type="number" data-ci="${i}" data-field="discount" value="${c.discount||1}" placeholder="折扣(如0.9)" min="0.1" max="1" step="0.01" style="width:70px">`:'';
+    const collDisplay=isPrepaid&&Number(c.amount)>0?`<span class="sm" style="color:#f59e0b;margin-left:4px">回款${collAmt}万</span>`:'';
+    return `<div class="contract-row" style="flex-wrap:wrap;gap:4px">
+    <select data-ci="${i}" data-field="type" style="width:110px">${CONTRACT_TYPES.map(t=>`<option value="${t}" ${c.type===t?'selected':''}>${t}</option>`).join('')}</select>
+    <input type="number" data-ci="${i}" data-field="amount" value="${c.amount||0}" placeholder="签约金额(万)" min="0" style="width:90px">
+    ${discountDisplay}${collDisplay}
+    <input type="date" data-ci="${i}" data-field="date" value="${c.date||todayStr()}" style="width:120px">
+    <div class="cr-del" onclick="removeContractRow(${i})">✕</div>
+  </div>`;
+  }).join('');
+  el.querySelectorAll('[data-ci]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      const ci=+inp.dataset.ci;const f=inp.dataset.field;
+      editingContracts[ci][f]=f==='amount'||f==='discount'?Number(inp.value):inp.value;
+      if(f==='amount'||f==='discount'||f==='type')renderContractList();
+    });
+  });
+}
+function addContractRow(){editingContracts.push({type:'预付款包房',amount:0,discount:1,date:todayStr()});renderContractList()}
+function removeContractRow(i){editingContracts.splice(i,1);renderContractList()}
+
+function saveCustomer(id){
+  const name=$('#cf-name').value.trim();
+  if(!name){toast('请填写客户名称');return}
+  const biz=$('#cf-biz').value;
+  // sync contracts from DOM
+  const clEl=document.getElementById('contract-list');
+  if(clEl){clEl.querySelectorAll('[data-ci]').forEach(inp=>{const ci=+inp.dataset.ci;const f=inp.dataset.field;editingContracts[ci][f]=f==='amount'?Number(inp.value):inp.value})}
+  const contracts=editingContracts.filter(c=>c&&c.type&&Number(c.amount)>0);
+  const status=$('#cf-status').value;
+  const intentAmt=Number($('#cf-intent')?.value||0);
+  /* v4: 新增 fundUsage 和 docsCompletedDate 字段 */
+  const fundUsage=$('#cf-fundUsage')?$('#cf-fundUsage').value.trim():'';
+  const docsCompletedDate=$('#cf-docsDate')?$('#cf-docsDate').value:'';
+  const data={
+    name,contactName:$('#cf-contact').value.trim(),contactPhone:$('#cf-phone').value.trim(),
+    businessLine:biz,status,remark:$('#cf-remark').value.trim(),
+    intendedAmount:status==='intent'?intentAmt:0,
+    contracts,
+    fundUsage,
+    docsCompletedDate
+  };
+  if(contracts.length>0&&data.status!=='signed'){data.status='signed'}
+  let customers=DB.get('customers',[]);
+  if(id){
+    const i=customers.findIndex(c=>c.id===id);
+    const oldBiz=customers[i].businessLine;
+    let bizChanged=false;
+    // BUG FIX: 先判断业务线是否变更，再合并
+    if(oldBiz!==data.businessLine){
+      const target=allSales().find(s=>s.businessLine===data.businessLine);
+      if(target){data.salesId=target.id;data.salesName=target.name;bizChanged=true}
+    }else{
+      data.salesId=customers[i].salesId;data.salesName=customers[i].salesName;
+    }
+    customers[i]={...customers[i],...data,updatedAt:todayStr()};
+    DB.set('customers',customers);
+    toast(bizChanged?('业务线变更，已分配给'+data.salesName+'跟进'):'已保存');
+    // v8: 后台同步到 API
+    api('PUT','/api/customers/'+id, data);
+  }else{
+    let salesId=state.user.id,salesName=state.user.name;
+    let reassigned=false;
+    if(state.user.role==='sales'&&state.user.businessLine!==biz){
+      const target=allSales().find(s=>s.businessLine===biz);
+      if(target){salesId=target.id;salesName=target.name;reassigned=true}
+    }
+    const newC={id:uid(),...data,salesId,salesName,createdAt:todayStr(),updatedAt:todayStr()};
+    customers.push(newC);
+    DB.set('customers',customers);
+    toast(reassigned?('已自动分配给'+salesName+'跟进'):'新增成功');
+    // v8: 后台同步到 API
+    api('POST','/api/customers', newC);
+  }
+  go('customers');
+}
+/* v8: delCustomer - 先更新本地缓存，再 API 同步 */
+function delCustomer(id){
+  if(!confirm('确认删除该客户及其跟进记录？'))return;
+  DB.set('customers',DB.get('customers',[]).filter(c=>c.id!==id));
+  DB.set('followups',DB.get('followups',[]).filter(f=>f.customerId!==id));
+  toast('已删除');go('customers');
+  // 后台同步到 API
+  api('DELETE','/api/customers/'+id);
+}
+
+/* ---------- Followup Form ---------- */
+function FollowupFormView(){
+  const cid=state.params.customerId;
+  const customers=myCustomers();
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="back()">‹</button><h1>录入跟进</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="form-group"><label>客户 <span class="req">*</span></label>
+        <select id="fu-cust"><option value="">请选择客户</option>${customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${c.name}（${c.businessLine}）</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>跟进日期 <span class="req">*</span></label><input id="fu-date" type="date" value="${todayStr()}"></div>
+      <div class="form-group"><label>客户状态变化</label>
+        <select id="fu-status"><option value="">仅跟进，状态不变</option>${STATUS_FLOW.map(k=>`<option value="${k}">→ ${STATUS[k].label}</option>`).join('')}</select>
+        <div class="xs t3" style="margin-top:4px">${state.user.role==='sales'?VALID_HINT[state.user.businessLine]:''}</div>
+      </div>
+      <div class="form-group"><label>跟进内容 <span class="req">*</span></label><textarea id="fu-content" placeholder="今天拜访/沟通了什么？客户反馈如何？"></textarea></div>
+      <div class="form-group"><label>下一步行动</label><input id="fu-next" placeholder="下次跟进重点/待办"></div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="saveFollowup()">保存跟进</button>
+  </div></div>`;
+  return html;
+}
+/* v8: saveFollowup - 先更新本地缓存（含客户状态），再 API 同步 */
+function saveFollowup(){
+  const custId=$('#fu-cust').value;
+  if(!custId){toast('请选择客户');return}
+  const content=$('#fu-content').value.trim();
+  if(!content){toast('请填写跟进内容');return}
+  const c=DB.get('customers',[]).find(x=>x.id===custId);
+  if(!c){toast('客户不存在');return}
+  const st=$('#fu-status').value;
+  const f={id:uid(),customerId:custId,customerName:c.name,salesId:c.salesId,salesName:c.salesName,businessLine:c.businessLine,
+    followDate:$('#fu-date').value,content,statusChange:st||'',nextAction:$('#fu-next').value.trim(),
+    createdAt:todayStr()+' '+new Date().toTimeString().slice(0,5)};
+  // 先更新本地缓存
+  let fs=DB.get('followups',[]);fs.push(f);DB.set('followups',fs);
+  if(st){let cs=DB.get('customers',[]);const i=cs.findIndex(x=>x.id===custId);cs[i].status=st;cs[i].updatedAt=todayStr();DB.set('customers',cs)}
+  toast('跟进已录入');go('customerDetail',{id:custId});
+  // 后台同步到 API
+  api('POST','/api/followups', f);
+}
+
+/* ---------- Reports (Daily list) ---------- */
+/* v4: 报告中心角色分离 - 销售仅看自己报告并生成图片；管理员看全员报告 + 销售筛选 */
+function ReportsView(){
+  const u=state.user;const isAdmin=u.role==='admin';
+  let html=`<div class="header"><div class="h-left"><h1>报告中心</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="report-tabs"><div class="report-tabs-inner"><button class="active">日报</button><button onclick="go('reportsW')">周报</button><button onclick="go('reportsM')">月报</button></div></div>
+    <div style="height:12px"></div>`;
+  /* v4: 管理员增加销售筛选下拉 */
+  let reports=DB.get('reports',[]).filter(r=>isAdmin?true:r.salesId===u.id).sort((a,b)=>b.date.localeCompare(a.date));
+  if(isAdmin){
+    const salesFilter=state.params.salesId||'';
+    html+=`<div class="report-filter">
+      <label class="xs t3">按销售筛选：</label>
+      <select onchange="filterReportSales(this.value)">
+        <option value="">全部销售</option>
+        ${allSales().map(s=>`<option value="${s.id}" ${salesFilter===s.id?'selected':''}>${s.name}（${s.businessLine}）</option>`).join('')}
+      </select>
+    </div>`;
+    if(salesFilter)reports=reports.filter(r=>r.salesId===salesFilter);
+
+    /* v10: 全员总览 + 各销售转化数据 */
+    const allCs=DB.get('customers',[]);
+    const allFs=DB.get('followups',[]);
+    const today=todayStr();
+    const wr=weekRange();
+    const m=monthStr();
+    const mStats=contractStats(allCs,m);
+    const allConv=salesConversionStats(allCs);
+    /* 各销售数据汇总 */
+    const salesList=allSales();
+    const salesRows=salesList.map(s=>{
+      const sc=allCs.filter(c=>c.salesId===s.id);
+      const ms=contractStats(sc,m);
+      const conv=salesConversionStats(sc);
+      const todayNew=sc.filter(c=>c.createdAt===today).length;
+      const weekNew=sc.filter(c=>(c.createdAt||'')>=wr.start&&(c.createdAt||'')<=wr.end).length;
+      return {s,sc,ms,conv,todayNew,weekNew};
+    });
+    /* 总览 */
+    html+=`<div class="section-title">全员总览（本月 ${m}）</div>
+    <div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff">
+      <div style="font-size:13px;opacity:.85">${m} 全员业绩总览</div>
+      <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.total}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">总客户</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.signed}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">已签约</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.total}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">签约金额</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.collectionTotal}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">应回款</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.convRate}%</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">整体转化率</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.avgCycle}天</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">平均转化周期</div></div>
+      </div>
+    </div>`;
+
+    /* 各销售转化数据表 */
+    html+=`<div class="section-title">销售业绩明细</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>销售</th>
+            <th>总客户</th>
+            <th>签约</th>
+            <th>签约额</th>
+            <th>转化率</th>
+            <th>平均周期</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    salesRows.forEach(({s,ms,conv})=>{
+      html+=`<tr>
+        <td><div style="font-weight:600">${s.name}</div><div class="xs t3">${s.businessLine}</div></td>
+        <td>${conv.total}</td>
+        <td style="color:var(--success);font-weight:600">${conv.signed}</td>
+        <td style="color:var(--primary);font-weight:600">${ms.total}万</td>
+        <td style="color:${conv.convRate>=30?'var(--success)':conv.convRate>=15?'var(--warn)':'var(--text-3)'};font-weight:600">${conv.convRate}%</td>
+        <td>${conv.avgCycle?conv.avgCycle+'天':'-'}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  html+=`<div class="section-title">日报列表 ${!isAdmin?`<span class="more" onclick="genTodayReport()">生成今日 →</span>`:''}</div>`;
+  if(reports.length===0)html+=`<div class="card"><div class="empty"><div class="em-ico">📊</div><p>暂无日报<br>${isAdmin?'':`点击"生成今日"创建`}</p></div></div>`;
+  else reports.forEach(r=>{
+    const sTag=isAdmin?`<span class="pill">${r.salesName}</span>`:'';
+    html+=`<div class="card card-tap" onclick="go('reportDetail',{id:'${r.id}'})">
+      <div class="card-row">
+        <div><div class="card-title">${r.businessLine} · 日报 ${sTag}</div>
+        <div class="card-sub">${r.date} · 新增${r.todayNewCount||0} · 历史${r.todayHistoryCount||0} · 有效${r.todayValidCount} · 签约${r.signedCustomers?.length||0}家</div></div>
+        <div style="color:var(--primary);font-size:20px">›</div>
+      </div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  return html;
+}
+/* v4: 报告中心 - 按销售筛选 */
+function filterReportSales(salesId){
+  state.params.salesId=salesId;
+  render();
+}
+
+function genTodayReport(){
+  const u=state.user;
+  if(u.role==='admin'){toast('管理员请查看团队报告');return}
+  const today=todayStr();
+  const reports=DB.get('reports',[]);
+  const exist=reports.find(r=>r.salesId===u.id&&r.date===today);
+  if(exist){go('reportDetail',{id:exist.id});return}
+  const fs=DB.get('followups',[]).filter(f=>f.salesId===u.id&&f.followDate===today);
+  const wr=weekRange();
+  const weekFs=DB.get('followups',[]).filter(f=>f.salesId===u.id&&f.followDate>=wr.start&&f.followDate<=wr.end);
+  const cs=DB.get('customers',[]).filter(c=>c.salesId===u.id);
+  // BUG FIX: 用 contract.date 判断本周签约
+  const signed=cs.filter(c=>signedInRange(c,wr.start,wr.end));
+  /* v10: 按客户状态计算（当日/当周跟进客户中状态为 valid/intent 的，去重） */
+  const todayFollowedCs=fs.map(f=>cs.find(c=>c.id===f.customerId)).filter(c=>c);
+  const todayValidIds=new Set(todayFollowedCs.filter(c=>c.status==='valid').map(c=>c.id));
+  const weekFollowedCs=weekFs.map(f=>cs.find(c=>c.id===f.customerId)).filter(c=>c);
+  const weekValidIds=new Set(weekFollowedCs.filter(c=>c.status==='valid').map(c=>c.id));
+  const weekIntentIds=new Set(weekFollowedCs.filter(c=>c.status==='intent').map(c=>c.id));
+  const weekIntentCs=cs.filter(c=>weekIntentIds.has(c.id));
+  /* v4: todayNewCount 用 cs.filter createdAt===today（今日新增客户数）
+         todayHistoryCount 用今日跟进的历史客户数（createdAt!==today）*/
+  const todayNewCount=cs.filter(c=>c.createdAt===today).length;
+  const todayHistoryCount=fs.filter(f=>{
+    const cust=cs.find(c=>c.id===f.customerId);
+    return cust&&cust.createdAt!==today;
+  }).length;
+  const r={id:uid(),salesId:u.id,salesName:u.name,date:today,businessLine:u.businessLine,
+    todayNewCount,
+    todayHistoryCount,
+    todayValidCount:todayValidIds.size,
+    weekValidCount:weekValidIds.size,
+    weekIntentCount:weekIntentIds.size,
+    weekIntentAmount:weekIntentCs.reduce((s,c)=>s+(Number(c.intendedAmount)||0),0),
+    weekReview:'',followups:fs,
+    /* v13: 签约客户按合同明细存储，便于分业务类型展示金额和回款 */
+    signedCustomers:signed.map(c=>{
+      const contracts=(c.contracts||[]).filter(ct=>ct.date>=wr.start&&ct.date<=wr.end);
+      return {id:c.id,name:c.name,contracts:contracts.map(ct=>({type:ct.type,amount:Number(ct.amount)||0,discount:Number(ct.discount)||1,date:ct.date}))};
+    }),
+    problems:'暂无',needHelp:'暂无',summary:'',
+    createdAt:today+' '+new Date().toTimeString().slice(0,5),updatedAt:today+' '+new Date().toTimeString().slice(0,5)
+  };
+  // 先更新本地缓存
+  reports.push(r);DB.set('reports',reports);
+  toast('日报已生成，请补充总结');go('reportDetail',{id:r.id});
+  // v8: 后台同步到 API
+  api('POST','/api/reports', r);
+}
+
+/* ---------- Report Detail ---------- */
+function ReportDetailView(){
+  const r=DB.get('reports',[]).find(x=>x.id===state.params.id);
+  if(!r)return`<div class="content"><div class="empty">报告不存在</div></div>`;
+  const wr=weekRange();
+  const isMine=r.salesId===state.user.id;
+  const fs=DB.get('followups',[]).filter(f=>f.salesId===r.salesId&&f.followDate===r.date);
+  const editable=isMine;
+  /* v13: 兼容新旧 signedCustomers 结构计算签约总额 */
+  const totalSigned=(r.signedCustomers||[]).reduce((s,sc)=>{
+    if(sc.contracts&&sc.contracts.length)return s+sc.contracts.reduce((ss,ct)=>ss+(Number(ct.amount)||0),0);
+    return s+Number(sc.amount||0);
+  },0);
+  /* v10: 按客户状态实时计算（当日/当周跟进客户中状态为 valid/intent 的） */
+  const salesCs=DB.get('customers',[]).filter(c=>c.salesId===r.salesId);
+  const todayFollowedCs=fs.map(f=>salesCs.find(c=>c.id===f.customerId)).filter(c=>c);
+  const todayValidCs=todayFollowedCs.filter(c=>c.status==='valid');
+  const weekAllFs=DB.get('followups',[]).filter(f=>f.salesId===r.salesId&&f.followDate>=wr.start&&f.followDate<=wr.end);
+  const weekFollowedCs=weekAllFs.map(f=>salesCs.find(c=>c.id===f.customerId)).filter(c=>c);
+  const weekValidCs=weekFollowedCs.filter(c=>c.status==='valid');
+  const weekIntentCs=weekFollowedCs.filter(c=>c.status==='intent');
+  const weekIntentAmount=weekIntentCs.reduce((s,c)=>s+(Number(c.intendedAmount)||0),0);
+  let html=`<div class="report-view"><div id="report-capture">
+    <div class="report-head">
+      <div class="report-head-inner">
+        <div class="rh-title">${r.salesName} · ${r.businessLine} 日报</div>
+        <div class="rh-name">${r.date}</div>
+        <div class="rh-meta"><span>本周 ${wr.start} ~ ${wr.end}</span><span>签约 ${totalSigned}万</span>${editable?'<span>可编辑</span>':''}</div>
+      </div>
+    </div>
+    <div class="report-body">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="k-num">${r.todayNewCount||0}</div><div class="k-lbl">今日新增</div></div>
+        <div class="kpi"><div class="k-num">${r.todayHistoryCount||0}</div><div class="k-lbl">历史跟进</div></div>
+        <div class="kpi"><div class="k-num">${todayValidCs.length}</div><div class="k-lbl">今日有效</div></div>
+        <div class="kpi"><div class="k-num">${weekValidCs.length}</div><div class="k-lbl">本周有效</div></div>
+        <div class="kpi"><div class="k-num">${weekIntentCs.length}</div><div class="k-lbl">本周意向</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${totalSigned}万</div><div class="k-lbl">签约金额</div></div>
+      </div>`;
+
+  /* v9: "今日拜访客户" */
+  html+=`<div class="rp-sec"><h4>今日拜访客户</h4>`;
+  /* 列出今日新增客户 */
+  const todayNewCs=salesCs.filter(c=>c.createdAt===r.date);
+  if(todayNewCs.length){
+    html+=`<div class="rp-num">新增客户（${todayNewCs.length} 个）：</div>`;
+    todayNewCs.forEach(c=>{
+      const typeTag='<span class="cust-type-tag new">新客户</span>';
+      html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${c.name}</span><span class="rc-name-meta">${custBizTag(c)} ${typeTag}</span></div><div class="rc-desc">${esc(c.remark||'')}</div>${c.fundUsage?`<div class="rc-desc" style="color:var(--text-2)">资金用途：${esc(c.fundUsage)}</div>`:''}</div>`;
+    });
+  }else{
+    html+=`<div class="rp-num">新增客户：暂无</div>`;
+  }
+  /* 列出今日跟进的历史客户 */
+  const historyFs=fs.filter(f=>{
+    const cust=salesCs.find(c=>c.id===f.customerId);
+    return cust&&cust.createdAt!==r.date;
+  });
+  if(historyFs.length){
+    html+=`<div class="rp-num mt12">历史客户跟进（${historyFs.length} 个）：</div>`;
+    historyFs.forEach(f=>{
+      const typeTag='<span class="cust-type-tag history">历史客户</span>';
+      const hc=salesCs.find(c=>c.id===f.customerId);
+      html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${f.customerName}</span><span class="rc-name-meta">${custBizTag(hc)} ${typeTag}</span></div><div class="rc-desc">${esc(f.content)}</div>${f.nextAction?`<div class="rc-desc" style="color:var(--warn)">📌 ${esc(f.nextAction)}</div>`:''}</div>`;
+    });
+  }
+  html+=`</div>`;
+
+  const bizLabel=r.businessLine;
+  /* v10: 标题改为"今日有效客户"，数据按客户状态计算 */
+  html+=`<div class="rp-sec"><h4>今日有效客户</h4>`;
+  /* 列出今日有效客户（去重，基于当日跟进客户中状态为 valid 的） */
+  const todayValidSeen=new Set();
+  todayValidCs.forEach(c=>{
+    if(todayValidSeen.has(c.id))return;
+    todayValidSeen.add(c.id);
+    const f=fs.find(ff=>ff.customerId===c.id);
+    html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${c.name}</span><span class="rc-name-meta">${custBizTag(c)}</span></div><div class="rc-desc">${f?esc(f.content):esc(c.remark||'')}</div>${f&&f.nextAction?`<div class="rc-desc" style="color:var(--warn)">📌 ${esc(f.nextAction)}</div>`:''}</div>`;
+  });
+  html+=`<div class="rp-num mt12" style="font-weight:600;font-size:14px;color:var(--text)">本周有效客户（${VALID_HINT[bizLabel]||''}）：${weekValidCs.length}</div>`;
+  /* 列出本周有效客户（去重，基于当周跟进客户中状态为 valid 的） */
+  const weekValidSeen=new Set();
+  weekValidCs.forEach(c=>{
+    if(weekValidSeen.has(c.id))return;
+    weekValidSeen.add(c.id);
+    const f=weekAllFs.find(ff=>ff.customerId===c.id);
+    html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${c.name}</span><span class="rc-name-meta">${custBizTag(c)}<span class="xs t3">${f?f.followDate:''}</span></span></div><div class="rc-desc">${f?esc(f.content):esc(c.remark||'')}</div>${f&&f.nextAction?`<div class="rc-desc" style="color:var(--warn)">📌 ${esc(f.nextAction)}</div>`:''}</div>`;
+  });
+  html+=`<div class="rp-num mt12" style="font-weight:600;font-size:14px;color:var(--text)">本周意向客户（30日内成交）：${weekIntentCs.length}</div>`;
+  html+=`<div class="rp-num" style="font-weight:600;font-size:14px;color:var(--text)">本周意向金额：${weekIntentAmount} 万</div>`;
+  /* v11: 本周意向客户列表 */
+  html+=`<div class="rp-num mt8" style="font-weight:600;font-size:14px;color:var(--text)">本周意向客户列表：</div>`;
+  if(weekIntentCs.length){
+    const weekIntentSeen=new Set();
+    weekIntentCs.forEach(c=>{
+      if(weekIntentSeen.has(c.id))return;
+      weekIntentSeen.add(c.id);
+      const f=weekAllFs.find(ff=>ff.customerId===c.id);
+      const amt=c.intendedAmount?`<span class="rc-amt">${c.intendedAmount}万</span>`:'';
+      html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${c.name}</span><span class="rc-name-meta">${custBizTag(c)}${amt}</span></div><div class="rc-desc">${f?esc(f.content):esc(c.remark||'')}</div>${c.fundUsage?`<div class="rc-desc" style="color:var(--text-2)">资金用途：${esc(c.fundUsage)}</div>`:''}${f&&f.nextAction?`<div class="rc-desc" style="color:var(--warn)">📌 ${esc(f.nextAction)}</div>`:''}</div>`;
+    });
+  }else{
+    html+=`<div class="rp-cust t3">暂无</div>`;
+  }
+  if(r.weekReview){html+=`<div class="rp-num mt12">评审客户（进入评审）：</div><div class="rp-cust">${esc(r.weekReview)}</div>`}
+  html+=`<div class="rp-num mt12" style="font-weight:600;font-size:14px;color:var(--text)">签约打款客户：</div>`;
+  /* v14: 签约客户显示优先使用客户当前合同数据，确保与客户详情一致；
+     预付款包房显示"回款"，代运营/加盟显示"收款" */
+  if(r.signedCustomers&&r.signedCustomers.length){
+    r.signedCustomers.forEach(sc=>{
+      /* v15-fix: 旧报告可能未保存客户 id，用 name 兜底查找，确保能读到最新合同 */
+      const cust=salesCs.find(c=>c.id===sc.id) || (sc.name && salesCs.find(c=>c.name===sc.name));
+      let contracts=[];
+      if(cust && cust.contracts && cust.contracts.length){
+        contracts=cust.contracts;
+      }else if(sc.contracts&&sc.contracts.length){
+        contracts=sc.contracts;
+      }else if(sc.types&&sc.types.length){
+        sc.types.forEach((t,i)=>{
+          const share=sc.types.length===1?sc.amount:Math.round((sc.amount||0)/sc.types.length);
+          contracts.push({type:t,amount:share,discount:sc.discount||1});
+        });
+      }else if(sc.amount){
+        contracts.push({type:'',amount:sc.amount,discount:sc.discount||1});
+      }
+      if(contracts.length){
+        contracts.forEach(ct=>{
+          const isPrepaid=ct.type==='预付款包房';
+          const coll=isPrepaid?calcCollection(ct.amount,ct.discount||1):ct.amount;
+          const collLine=isPrepaid
+            ?(coll>ct.amount?`<span class="rc-coll">回款${coll}万</span>`:'')
+            :(Number(ct.amount)>0?`<span class="rc-income">收款${coll}万</span>`:'');
+          const typeColor=CONTRACT_COLORS[ct.type]||'#666';
+          const typeTag=ct.type?`<span class="pill" style="background:${typeColor}22;color:${typeColor}">${ct.type}</span>`:'';
+          html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${sc.name}</span><span class="rc-name-meta">${typeTag}<span class="rc-amt">${ct.amount}万</span>${collLine}</span></div></div>`;
+        });
+      }else{
+        html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${sc.name}</span></div></div>`;
+      }
+    });
+  }else html+=`<div class="rp-cust t3">暂无</div>`;
+  html+=`</div>`;
+
+  const otherFs=fs.filter(f=>f.businessLine!==bizLabel);
+  if(otherFs.length){
+    const otherBizs=[...new Set(otherFs.map(f=>f.businessLine))];
+    otherBizs.forEach(ob=>{html+=`<div class="rp-sec"><h4>${ob}</h4>`;const ofs=otherFs.filter(f=>f.businessLine===ob);
+      html+=`<div class="rp-num">今日跟进：${ofs.length}</div>`;
+      ofs.forEach(f=>{const oc=salesCs.find(c=>c.id===f.customerId);html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${f.customerName}</span><span class="rc-name-meta">${custBizTag(oc)}</span></div><div class="rc-desc">${esc(f.content)}</div></div>`});
+      html+=`</div>`});
+    html+=`<div class="rp-sec"><h4>今日问题 / 需协助</h4>`;
+  }else{
+    html+=`<div class="rp-sec"><h4>今日问题 / 需协助</h4>`;
+  }
+  html+=`<div class="rp-cust"><div class="xs t3">今日遇到问题</div><div style="margin-top:4px">${esc(r.problems||'暂无')}</div></div>
+    <div class="rp-cust"><div class="xs t3">需要协助</div><div style="margin-top:4px">${esc(r.needHelp||'暂无')}</div></div></div>`;
+
+  if(r.summary)html+=`<div class="rp-sec"><h4>重点跟进事项总结</h4><div class="rp-cust">${esc(r.summary)}</div></div>`;
+
+  html+=`</div></div>`; // close report-body, report-capture
+
+  // actions (outside capture)
+  html+=`<div class="report-body" style="padding-top:0">
+    <div class="report-actions">`;
+  html+=`<button class="btn btn-outline" onclick="exportReportImage('${r.id}','daily')">📷 生成图片</button>`;
+  if(editable)html+=`<button class="btn btn-primary" onclick="editReport('${r.id}')">✏️ 编辑日报</button>`;
+  html+=`</div></div>`;
+
+  // edit section
+  if(editable&&state.params.edit){
+    html+=`<div class="report-body" style="padding-top:0" id="edit-area">
+      <div class="rp-sec"><h4>编辑日报</h4>
+        <div class="rp-summary"><label>重点跟进事项总结</label><textarea id="rp-summary" placeholder="今天重点推进了什么？">${esc(r.summary||'')}</textarea></div>
+        <div class="rp-edit"><label>今日遇到问题</label><textarea id="rp-problems">${esc(r.problems||'')}</textarea></div>
+        <div class="rp-edit" style="margin-top:8px"><label>需要协助</label><textarea id="rp-help">${esc(r.needHelp||'')}</textarea></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveReport('${r.id}')">保存日报</button>
+    </div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+function editReport(id){go('reportDetail',{id,edit:true})}
+/* v8: saveReport - 先更新本地缓存，再 API 同步 */
+function saveReport(id){
+  let reports=DB.get('reports',[]);
+  const i=reports.findIndex(r=>r.id===id);
+  const updates={
+    summary:$('#rp-summary').value.trim(),
+    problems:$('#rp-problems').value.trim(),
+    needHelp:$('#rp-help').value.trim(),
+    updatedAt:todayStr()+' '+new Date().toTimeString().slice(0,5)
+  };
+  reports[i]={...reports[i],...updates};
+  DB.set('reports',reports);
+  toast('日报已保存');go('reportDetail',{id});
+  // 后台同步到 API
+  api('PUT','/api/reports/'+id, updates);
+}
+
+/* ---------- Weekly Report ---------- */
+/* v4: 管理员可按销售筛选；高亮主签约类型 */
+function WeeklyReportView(){
+  const u=state.user;const isAdmin=u.role==='admin';
+  const wr=weekRange();
+  let sales=isAdmin?allSales():[u];
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('reports')">‹</button><h1>周报</h1></div></div>`;
+  /* v4: 管理员销售筛选（独立块，已闭合） */
+  if(isAdmin){
+    const salesFilter=state.params.salesId||'';
+    html+=`<div class="content"><div class="container"><div class="report-filter">
+      <label class="xs t3">按销售筛选：</label>
+      <select onchange="filterReportSales(this.value)">
+        <option value="">全部销售</option>
+        ${allSales().map(s=>`<option value="${s.id}" ${salesFilter===s.id?'selected':''}>${s.name}（${s.businessLine}）</option>`).join('')}
+      </select>
+    </div></div></div>`;
+    if(salesFilter)sales=sales.filter(s=>s.id===salesFilter);
+  }
+  html+=`<div class="report-view"><div id="report-capture">
+    <div class="report-head">
+      <div class="report-head-inner">
+        <div class="rh-name">销售周报</div>
+        <div class="rh-title">${wr.start} ~ ${wr.end}</div>
+        <div class="rh-meta"><span>${isAdmin?(state.params.salesId?'个人':'全员'):'个人'}周报</span></div>
+      </div>
+    </div>
+    <div class="report-body">`;
+  let gSigned=0,gValid=0,gIntent=0,gNew=0,gFollowup=0;
+  /* v8: 从 DATA.nextPlans 读取下周计划 */
+  const allPlans=DB.get('nextPlans',{});
+  /* v10: 全员总览 - 仅管理员未筛选销售时显示 */
+  if(isAdmin&&!state.params.salesId){
+    const allCs=DB.get('customers',[]);
+    const allFs=DB.get('followups',[]).filter(f=>f.followDate>=wr.start&&f.followDate<=wr.end);
+    const rangeMs=contractStatsInRange(allCs,wr.start,wr.end);
+    const allConv=salesConversionStats(allCs);
+    gNew=allCs.filter(c=>(c.createdAt||'')>=wr.start&&(c.createdAt||'')<=wr.end).length;
+    gFollowup=allFs.length;
+    html+=`<div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff;margin-bottom:14px">
+      <div style="font-size:13px;opacity:.85">本周全员总览（${wr.start} ~ ${wr.end}）</div>
+      <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.total}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">总客户</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gNew}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周新增</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gFollowup}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周跟进</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${rangeMs.total}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周签约额</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${rangeMs.count}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周签约数</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.convRate}%</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">整体转化率</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.avgCycle}天</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">平均转化周期</div></div>
+      </div>
+    </div>`;
+    /* 销售业绩明细表 */
+    html+=`<div class="section-title">销售业绩明细</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>销售</th>
+            <th>总客户</th>
+            <th>本周签约</th>
+            <th>签约额</th>
+            <th>转化率</th>
+            <th>平均周期</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    allSales().forEach(s=>{
+      const sc=DB.get('customers',[]).filter(c=>c.salesId===s.id);
+      const ms=contractStatsInRange(sc,wr.start,wr.end);
+      const conv=salesConversionStats(sc);
+      html+=`<tr>
+        <td><div style="font-weight:600">${s.name}</div><div class="xs t3">${s.businessLine}</div></td>
+        <td>${conv.total}</td>
+        <td style="color:var(--success);font-weight:600">${ms.count}</td>
+        <td style="color:var(--primary);font-weight:600">${ms.total}万</td>
+        <td style="color:${conv.convRate>=30?'var(--success)':conv.convRate>=15?'var(--warn)':'var(--text-3)'};font-weight:600">${conv.convRate}%</td>
+        <td>${conv.avgCycle?conv.avgCycle+'天':'-'}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  sales.forEach(s=>{
+    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id&&f.followDate>=wr.start&&f.followDate<=wr.end);
+    const cs=DB.get('customers',[]).filter(c=>c.salesId===s.id);
+    const valid=sf.filter(f=>f.statusChange==='valid').length;
+    const intent=cs.filter(c=>c.status==='intent').length;
+    // BUG FIX: 用 contract.date 判断本周签约
+    const signed=cs.filter(c=>signedInRange(c,wr.start,wr.end));
+    const signedAmt=signed.reduce((a,c)=>a+signedAmount(c),0);
+    gSigned+=signedAmt;gValid+=valid;gIntent+=intent;
+    /* v10: 销售维度转化数据 */
+    const conv=salesConversionStats(cs);
+    /* v4: 主签约类型 */
+    const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
+    html+=`<div class="card">
+      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="divider"></div>
+      <div class="kpi-grid" style="margin-bottom:0">
+        <div class="kpi"><div class="k-num">${sf.length}</div><div class="k-lbl">本周跟进</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--warn)">${valid}</div><div class="k-lbl">有效</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--purple)">${intent}</div><div class="k-lbl">意向</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${signedAmt}万</div><div class="k-lbl">签约额</div></div>
+        <div class="kpi"><div class="k-num">${signed.length}</div><div class="k-lbl">签约数</div></div>
+        <div class="kpi"><div class="k-num">${cs.length}</div><div class="k-lbl">总客户</div></div>
+      </div>
+      <div class="conv-mini" style="margin-top:10px;display:flex;gap:8px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:${conv.convRate>=30?'var(--success)':conv.convRate>=15?'var(--warn)':'var(--text-3)'}">${conv.convRate}%</div>
+          <div class="xs t3" style="margin-top:2px">客户转化率</div>
+          <div class="xs t3">${conv.signed}/${conv.total}</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--primary)">${conv.avgCycle?conv.avgCycle+'天':'-'}</div>
+          <div class="xs t3" style="margin-top:2px">平均转化周期</div>
+          <div class="xs t3">创建→首签</div>
+        </div>
+      </div>`;
+    if(signed.length){
+      html+=`<div class="section-title">本周签约客户</div>`;
+      signed.forEach(c=>{
+        const types=contractTypes(c);
+        /* v4: 主类型高亮 */
+        const typePills=types.map(t=>`<span class="pill" style="background:${CONTRACT_COLORS[t]}22;color:${CONTRACT_COLORS[t]}${t===mainType?';font-weight:700;border:1px solid '+CONTRACT_COLORS[t]:''}">${t}${t===mainType?' ★':''}</span>`).join(' ');
+        html+=`<div class="rp-cust"><div class="rc-name">${c.name}<span class="rc-amt">${signedAmount(c)}万</span></div>${types.length?`<div class="rc-desc">签约类型：${typePills}</div>`:''}</div>`;
+      });
+    }
+    /* v7: 下周工作计划（销售可编辑）- v8: 从 DATA.nextPlans 读取 */
+    const savedPlan=allPlans[s.id+'_'+wr.end]||'';
+    html+=`<div class="section-title" style="margin-top:12px">下周工作计划</div>
+      <textarea id="nextPlan_${s.id}" class="next-plan-editor" placeholder="输入下周工作计划..." style="width:100%;min-height:80px;border:1px solid var(--border);border-radius:8px;padding:10px;font-size:13px;line-height:1.6;resize:vertical;background:#fff;color:var(--text);font-family:inherit">${esc(savedPlan)}</textarea>
+      <button class="btn btn-outline sm" style="margin-top:6px;font-size:12px;padding:6px 12px" onclick="saveNextPlan('${s.id}','${wr.end}')">保存下周计划</button>`;
+    html+=`</div>`;
+  });
+  html+=`<div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff">
+    <div style="font-size:13px;opacity:.85">本周汇总</div>
+    <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gValid}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">有效客户</div></div>
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gIntent}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">意向客户</div></div>
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gSigned}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">签约总额</div></div>
+    </div>
+  </div></div></div>`;
+  html+=`<div class="report-body" style="padding-top:0"><div class="report-actions">
+    <button class="btn btn-outline" onclick="exportReportImage(null,'weekly')">📷 生成周报图片</button>
+  </div></div></div>`;
+  return html;
+}
+
+/* ---------- Monthly Report ---------- */
+/* v4: 管理员可按销售筛选；高亮主签约类型 */
+function MonthlyReportView(){
+  const u=state.user;const isAdmin=u.role==='admin';
+  const m=monthStr();
+  let sales=isAdmin?allSales():[u];
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('reports')">‹</button><h1>月报</h1></div></div>`;
+  /* v4: 管理员销售筛选（独立块，已闭合） */
+  if(isAdmin){
+    const salesFilter=state.params.salesId||'';
+    html+=`<div class="content"><div class="container"><div class="report-filter">
+      <label class="xs t3">按销售筛选：</label>
+      <select onchange="filterReportSales(this.value)">
+        <option value="">全部销售</option>
+        ${allSales().map(s=>`<option value="${s.id}" ${salesFilter===s.id?'selected':''}>${s.name}（${s.businessLine}）</option>`).join('')}
+      </select>
+    </div></div></div>`;
+    if(salesFilter)sales=sales.filter(s=>s.id===salesFilter);
+  }
+  html+=`<div class="report-view"><div id="report-capture">
+    <div class="report-head">
+      <div class="report-head-inner">
+        <div class="rh-name">销售月报</div>
+        <div class="rh-title">${m}</div>
+        <div class="rh-meta"><span>${isAdmin?(state.params.salesId?'个人':'全员'):'个人'}月报</span></div>
+      </div>
+    </div>
+    <div class="report-body">`;
+  let gSigned=0,gValid=0,gIntent=0,gTarget=0;
+  const allCs=DB.get('customers',[]);
+  const typeStats={};CONTRACT_TYPES.forEach(t=>typeStats[t]={count:0,amount:0});
+  /* v10: 全员总览 - 仅管理员未筛选销售时显示 */
+  if(isAdmin&&!state.params.salesId){
+    const allConv=salesConversionStats(allCs);
+    const mStats=contractStats(allCs,m);
+    const totalTarget=allSales().reduce((s,sl)=>s+(sl.monthlyTarget||0),0);
+    gTarget=totalTarget;
+    const monthNew=allCs.filter(c=>(c.createdAt||'').startsWith(m)).length;
+    const monthFollowups=DB.get('followups',[]).filter(f=>(f.followDate||'').startsWith(m)).length;
+    html+=`<div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff;margin-bottom:14px">
+      <div style="font-size:13px;opacity:.85">${m} 全员总览 · 目标 ${totalTarget}万</div>
+      <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.total}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">总客户</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${monthNew}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本月新增</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${monthFollowups}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本月跟进</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.total}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本月签约额</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.collectionTotal}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">应回款</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.convRate}%</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">整体转化率</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.avgCycle}天</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">平均转化周期</div></div>
+      </div>
+    </div>`;
+    /* 销售业绩明细表 */
+    html+=`<div class="section-title">销售业绩明细</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="conv-table">
+        <thead>
+          <tr>
+            <th>销售</th>
+            <th>总客户</th>
+            <th>本月签约</th>
+            <th>签约额</th>
+            <th>完成率</th>
+            <th>转化率</th>
+            <th>平均周期</th>
+          </tr>
+        </thead>
+        <tbody>`;
+    allSales().forEach(s=>{
+      const sc=allCs.filter(c=>c.salesId===s.id);
+      const ms=contractStats(sc,m);
+      const conv=salesConversionStats(sc);
+      const tgt=s.monthlyTarget||0;
+      const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+      html+=`<tr>
+        <td><div style="font-weight:600">${s.name}</div><div class="xs t3">${s.businessLine}</div></td>
+        <td>${conv.total}</td>
+        <td style="color:var(--success);font-weight:600">${ms.count}</td>
+        <td style="color:var(--primary);font-weight:600">${ms.total}万</td>
+        <td style="color:${pct>=100?'var(--success)':'var(--warn)'};font-weight:600">${pct}%</td>
+        <td style="color:${conv.convRate>=30?'var(--success)':conv.convRate>=15?'var(--warn)':'var(--text-3)'};font-weight:600">${conv.convRate}%</td>
+        <td>${conv.avgCycle?conv.avgCycle+'天':'-'}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  }
+  sales.forEach(s=>{
+    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id&&f.followDate.startsWith(m));
+    const cs=allCs.filter(c=>c.salesId===s.id);
+    const valid=sf.filter(f=>f.statusChange==='valid').length;
+    const intent=cs.filter(c=>c.status==='intent').length;
+    const ms=contractStats(cs,m);
+    const tgt=s.monthlyTarget||0;
+    const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+    gSigned+=ms.total;gValid+=valid;gIntent+=intent;
+    if(!isAdmin||state.params.salesId)gTarget+=tgt;
+    CONTRACT_TYPES.forEach(t=>{typeStats[t].count+=ms.byType[t].count;typeStats[t].amount+=ms.byType[t].amount});
+    /* v10: 销售转化数据 */
+    const conv=salesConversionStats(cs);
+    /* v4: 主签约类型 */
+    const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
+    html+=`<div class="card">
+      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="divider"></div>
+      <div class="kpi-grid" style="margin-bottom:0">
+        <div class="kpi"><div class="k-num">${sf.length}</div><div class="k-lbl">本月跟进</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--warn)">${valid}</div><div class="k-lbl">有效</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--purple)">${intent}</div><div class="k-lbl">意向</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${ms.total}万</div><div class="k-lbl">签约额</div></div>
+        <div class="kpi"><div class="k-num">${ms.count}</div><div class="k-lbl">签约数</div></div>
+        <div class="kpi"><div class="k-num" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</div><div class="k-lbl">完成率</div></div>
+      </div>
+      <div class="conv-mini" style="margin-top:10px;display:flex;gap:8px">
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:${conv.convRate>=30?'var(--success)':conv.convRate>=15?'var(--warn)':'var(--text-3)'}">${conv.convRate}%</div>
+          <div class="xs t3" style="margin-top:2px">客户转化率</div>
+          <div class="xs t3">${conv.signed}/${conv.total}</div>
+        </div>
+        <div style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:16px;font-weight:700;color:var(--primary)">${conv.avgCycle?conv.avgCycle+'天':'-'}</div>
+          <div class="xs t3" style="margin-top:2px">平均转化周期</div>
+          <div class="xs t3">创建→首签</div>
+        </div>
+      </div>
+      <div style="margin-top:10px"><div class="flex between sm mb8"><span class="t2">月目标 ${tgt}万</span><span class="t2">完成 ${ms.total}万</span></div><div class="progress"><span style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--success)':'var(--primary)'}"></span></div></div>
+      <div class="pc-types" style="display:flex;gap:8px;margin-top:10px">${CONTRACT_TYPES.map(t=>`<div class="pc-type ${t===mainType?'main':'supplementary'}" style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center${t===mainType?';border:2px solid '+CONTRACT_COLORS[t]:''}"><div class="pt-num" style="font-size:15px;font-weight:700;color:${CONTRACT_COLORS[t]}">${ms.byType[t].amount}万</div><div class="pt-lbl" style="font-size:11px;color:var(--text-2)">${t}·${ms.byType[t].count}单${t===mainType?' ★':''}</div></div>`).join('')}</div>`;
+    const signedThisMonth=cs.filter(c=>(c.contracts||[]).some(ct=>(ct.date||'').startsWith(m)));
+    if(signedThisMonth.length){html+=`<div class="section-title">本月签约客户</div>`;signedThisMonth.forEach(c=>{const types=contractTypes(c);const tp=types.map(t=>`<span class="pill" style="background:${CONTRACT_COLORS[t]}22;color:${CONTRACT_COLORS[t]}${t===mainType?';font-weight:700':''}">${t}${t===mainType?' ★':''}</span>`).join(' ');html+=`<div class="rp-cust"><div class="rc-name">${c.name}<span class="rc-amt">${signedAmount(c)}万</span></div>${types.length?`<div class="rc-desc">${tp}</div>`:''}</div>`})}
+    html+=`</div>`;
+  });
+  const gPct=gTarget>0?Math.round(gSigned/gTarget*100):0;
+  html+=`<div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff">
+    <div style="font-size:13px;opacity:.85">本月汇总 · 目标 ${gTarget}万 · 完成率 ${gPct}%</div>
+    <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gValid}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">有效</div></div>
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gIntent}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">意向</div></div>
+      <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${gSigned}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">签约额</div></div>
+    </div>
+    <div style="margin-top:12px;height:8px;background:rgba(255,255,255,.25);border-radius:4px;overflow:hidden"><span style="display:block;height:100%;background:#fff;width:${Math.min(gPct,100)}%"></span></div>
+    <div style="display:flex;gap:8px;margin-top:12px">${CONTRACT_TYPES.map(t=>`<div style="flex:1;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 8px;text-align:center"><div style="font-size:16px;font-weight:700">${typeStats[t].amount}万</div><div style="font-size:11px;opacity:.8">${t}·${typeStats[t].count}单</div></div>`).join('')}</div>
+  </div></div></div>`;
+  html+=`<div class="report-body" style="padding-top:0"><div class="report-actions">
+    <button class="btn btn-outline" onclick="exportReportImage(null,'monthly')">📷 生成月报图片</button>
+  </div></div></div>`;
+  return html;
+}
+
+/* ---------- Report Image Export ---------- */
+async function exportReportImage(reportId,type){
+  toast('正在生成图片...');
+  const el=document.getElementById('report-capture');
+  if(!el){toast('未找到报告内容');return}
+  /* v7: 导出前将 textarea 替换为纯文本 div（html2canvas 无法渲染 textarea） */
+  const textareas=el.querySelectorAll('.next-plan-editor');
+  const saved=[];
+  textareas.forEach(ta=>{
+    saved.push({el:ta,parent:ta.parentNode,next:ta.nextSibling});
+    const div=document.createElement('div');
+    div.className='next-plan-text';
+    div.style.cssText='width:100%;min-height:60px;padding:10px;font-size:13px;line-height:1.6;background:#fff9e6;border-radius:8px;border:1px solid var(--border);color:var(--text)';
+    div.textContent=ta.value||'（暂无下周计划）';
+    ta.parentNode.replaceChild(div,ta);
+  });
+  /* 同样隐藏保存按钮 */
+  const saveBtns=el.querySelectorAll('button[onclick*="saveNextPlan"]');
+  const savedBtns=[];
+  saveBtns.forEach(btn=>{
+    savedBtns.push({el:btn,parent:btn.parentNode});
+    btn.style.display='none';
+  });
+  try{
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,allowTaint:true});
+    const name=type==='daily'?`日报_${todayStr()}`:type==='weekly'?`周报_${weekRange().start}`:`月报_${monthStr()}`;
+    /* v19: 移动端兼容下载 - 用Blob+显式DOM操作，移动端显示图片预览供长按保存 */
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isWeixin=/MicroMessenger/i.test(navigator.userAgent);
+    const triggerDownload=(url,filename)=>{
+      const link=document.createElement('a');
+      link.download=filename;link.href=url;link.style.display='none';
+      document.body.appendChild(link);link.click();
+      setTimeout(()=>{document.body.removeChild(link);if(url.startsWith('blob:'))URL.revokeObjectURL(url)},300);
+    };
+    const showImagePreview=(dataUrl)=>{
+      /* 兜底：在页面显示图片，用户长按保存 */
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML=`<div style="color:#fff;font-size:16px;margin-bottom:12px;font-weight:600">长按下方图片保存到手机</div>
+        <img src="${dataUrl}" style="max-width:100%;max-height:72vh;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+        <div style="color:#9aa3b8;font-size:12px;margin-top:10px">如未自动下载，请长按图片选择"保存图像"</div>
+        <button onclick="this.parentNode.remove()" style="margin-top:16px;padding:10px 28px;background:#4f7cff;color:#fff;border:none;border-radius:20px;font-size:15px">关闭</button>`;
+      document.body.appendChild(overlay);
+    };
+    if(isWeixin||isMobile){
+      /* 微信/iOS Safari: 先尝试Blob下载，再显示预览兜底 */
+      canvas.toBlob((blob)=>{
+        if(blob){triggerDownload(URL.createObjectURL(blob),name+'.png')}
+        const dataUrl=canvas.toDataURL('image/png');
+        showImagePreview(dataUrl);
+        toast('长按图片即可保存');
+      },'image/png',0.95);
+    }else{
+      /* PC端：直接下载 */
+      canvas.toBlob((blob)=>{
+        if(blob){triggerDownload(URL.createObjectURL(blob),name+'.png');toast('图片已保存')}
+        else{triggerDownload(canvas.toDataURL('image/png'),name+'.png');toast('图片已保存')}
+      },'image/png',0.95);
+    }
+  }catch(e){toast('生成失败：'+e.message)}
+  /* 还原 textarea */
+  saved.forEach(s=>{s.parent.replaceChild(s.el,s.el.parentNode.querySelector('.next-plan-text')||s.el)});
+  savedBtns.forEach(s=>{s.el.style.display=''});
+}
+
+/* ---------- Bottom Nav ---------- */
+function BottomNav(isAdmin){
+  const v=state.view;
+  const items=[
+    {key:'dashboard',ico:'🏠',label:'工作台'},
+    {key:'customers',ico:'👥',label:'客户'},
+    {key:'reports',ico:'📊',label:'报告'},
+    {key:isAdmin?'admin':'me',ico:isAdmin?'👔':'⚙️',label:isAdmin?'管理':'我的'}
+  ];
+  const isActive=k=>{
+    if(k==='reports'&&['reports','reportsW','reportsM','reportDetail'].includes(v))return true;
+    if(k==='admin'&&['admin','team','userForm','hireAnalysis'].includes(v))return true;
+    return v===k;
+  };
+  return `<div class="bottom-nav">${items.map(it=>`<div class="nav-item ${isActive(it.key)?'active':''}" onclick="go('${it.key}')"><span class="ni">${it.ico}</span>${it.label}</div>`).join('')}</div>`;
+}
+
+/* ---------- Me ---------- */
+/* v4: 显示入职日期 / 入职天数 / 保护期状态 */
+function MeView(){
+  const u=state.user;const m=monthStr();
+  const cs=myCustomers();const ms=contractStats(cs,m);
+  const tgt=u.monthlyTarget||0;const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+  let html=`<div class="header"><div class="h-left"><h1>我的</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card" style="text-align:center;padding:24px">
+      <div class="avatar" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;background:${avColor(u.name)}">${u.name[0]}</div>
+      <div style="font-size:18px;font-weight:700">${u.name}</div>
+      <div style="margin-top:6px"><span class="biz-tag">${u.businessLine||'管理员'}</span></div>
+    </div>`;
+  if(u.role==='sales'){
+    /* v4: 入职信息卡片 */
+    const days=daysSinceHire(u.hireDate);
+    const inProtection=isInProtection(u.hireDate);
+    html+=`<div class="card" style="background:${inProtection?'#fff3cd':'var(--bg)'};border-left:3px solid ${inProtection?'#ffe69c':'var(--border)'}">
+      <div class="flex between center">
+        <div>
+          <div class="xs t3">入职日期</div>
+          <div class="bold" style="margin-top:2px">${u.hireDate||'未设置'}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="xs t3">入职天数</div>
+          <div class="bold" style="margin-top:2px;color:${inProtection?'#856404':'var(--text-1)'}">${days} 天</div>
+        </div>
+        ${inProtection?'<div class="protection-badge">🛡️ 保护期</div>':''}
+      </div>
+      ${inProtection?`<div class="xs" style="margin-top:8px;color:#856404">入职 30 天内为新员工保护期，重点扶持产出</div>`:`<div class="xs t3" style="margin-top:8px">已过保护期（${days-30} 天前结束）</div>`}
+    </div>`;
+    html+=`<div class="target-card" style="margin:0 0 12px">
+      <div class="tc-top"><div><div class="tc-lbl">本月目标</div><div class="tc-val">${tgt}万</div></div><div style="text-align:right"><div class="tc-lbl">完成率</div><div class="tc-pct">${pct}%</div></div></div>
+      <div class="tc-bar"><span style="width:${Math.min(pct,100)}%"></span></div>
+      <div class="tc-types">${CONTRACT_TYPES.map(t=>`<div><div class="tt-num">${ms.byType[t].amount}万</div><div class="tt-lbl">${t}·${ms.byType[t].count}单</div></div>`).join('')}</div>
+    </div>`;
+  }
+  html+=`<div class="section-title">账户</div>
+    <div class="card"><div class="flex between center"><span>用户名</span><span class="t2">${u.username}</span></div></div>
+    <div class="card"><div class="flex between center"><span>手机</span><span class="t2">${u.phone||'-'}</span></div></div>
+    ${u.role==='sales'?`<div class="card"><div class="flex between center"><span>月目标</span><span class="t2 bold" style="color:var(--primary)">${tgt}万</span></div></div>`:''}
+    <div class="section-title">安全</div>
+    <div class="card card-tap" onclick="go('changePassword')"><div class="flex between center"><span>🔑 修改密码</span><span class="t3">›</span></div></div>
+    <div class="section-title">功能</div>
+    <div class="card card-tap" onclick="go('reports')"><div class="flex between center"><span>📊 日报/周报/月报</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="go('customers')"><div class="flex between center"><span>👥 我的客户</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="showExportMenu()"><div class="flex between center"><span>💾 导出数据（JSON/CSV）</span><span class="t3">›</span></div></div>
+    <div style="height:12px"></div>
+    <button class="btn btn-ghost" onclick="logout()">退出登录</button>
+  </div></div>`;
+  return html;
+}
+
+/* ---------- Change Password ---------- */
+function ChangePasswordView(){
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('me')">‹</button><h1>修改密码</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="form-group"><label>当前密码 <span class="req">*</span></label><input id="cp-old" type="password" placeholder="请输入当前密码"></div>
+      <div class="form-group"><label>新密码 <span class="req">*</span></label><input id="cp-new" type="password" placeholder="请输入新密码（至少4位）"></div>
+      <div class="form-group"><label>确认新密码 <span class="req">*</span></label><input id="cp-confirm" type="password" placeholder="请再次输入新密码"></div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="changePassword()">确认修改</button>
+  </div></div>`;
+  return html;
+}
+async function changePassword(){
+  const oldP=$('#cp-old').value.trim();
+  const newP=$('#cp-new').value.trim();
+  const confirmP=$('#cp-confirm').value.trim();
+  if(!oldP){toast('请输入当前密码');return}
+  if(!newP||newP.length<4){toast('新密码至少4位');return}
+  if(newP!==confirmP){toast('两次输入的新密码不一致');return}
+  if(oldP===newP){toast('新密码不能与当前密码相同');return}
+  const r=await api('POST','/api/changePassword',{oldPassword:oldP,newPassword:newP});
+  if(!r){return}
+  if(!r.success){toast(r.msg||'密码修改失败');return}
+  /* 更新本地 DATA 中的密码 */
+  let users=DB.get('users',[]);
+  const i=users.findIndex(u=>u.id===state.user.id);
+  if(i>=0){users[i].password=newP;DATA.users=users}
+  state.user.password=newP;
+  toast('密码已修改，请重新登录');
+  logout();
+}
+
+/* ---------- Admin ---------- */
+/* v4: 拆分今日统计为"今日新增客户"+"今日跟进历史客户"；perf-card 高亮主签约类型；加入职产出分析 */
+function AdminView(){
+  const u=state.user;
+  if(u.role!=='admin'){go('dashboard');return ''}
+  const cs=DB.get('customers',[]);
+  const fs=DB.get('followups',[]);
+  /* v5: 时间筛选 */
+  const range=getDashRange();
+  let html=`<div class="header"><div class="h-left"><h1>管理看板</h1></div></div>`;
+  html+=`<div class="content"><div class="container wide">`;
+  /* v5: 筛选器 */
+  html+=`<div class="dash-filter">
+    <div class="filter-bar">
+      <button class="chip ${range.type==='today'?'active':''}" onclick="setDashRange('today')">今天</button>
+      <button class="chip ${range.type==='week'?'active':''}" onclick="setDashRange('week')">本周</button>
+      <button class="chip ${range.type==='month'?'active':''}" onclick="setDashRange('month')">本月</button>
+      <button class="chip ${range.type==='custom'?'active':''}" onclick="setDashRange('custom')">自定义</button>
+    </div>
+    <div class="dash-range-label">${range.label}${range.type!=='custom'&&range.start?`（${range.start} ~ ${range.end}）`:''}</div>
+    ${range.type==='custom'?`<div class="dash-custom"><input type="date" value="${range.start}" onchange="setDashCustom('dashStart',this.value)"><span>~</span><input type="date" value="${range.end}" onchange="setDashCustom('dashEnd',this.value)"></div>`:''}
+  </div>`;
+  const mStats=contractStatsInRange(cs,range.start,range.end);
+  /* v5: 按筛选区间统计 */
+  const rangeNewCustomers=cs.filter(c=>(c.createdAt||'')>=range.start&&(c.createdAt||'')<=range.end);
+  const rangeFs=fs.filter(f=>(f.followDate||'')>=range.start&&(f.followDate||'')<=range.end);
+  const rangeHistoryFs=rangeFs.filter(f=>{
+    const cust=cs.find(c=>c.id===f.customerId);
+    return cust&&(cust.createdAt||'')<range.start;
+  });
+  const totalTarget=allSales().reduce((s,sl)=>s+(sl.monthlyTarget||0),0);
+  const isMonthView=range.type==='month';
+  html+=`<div class="stat-grid">
+    <div class="stat blue"><div class="num">${allSales().length}</div><div class="lbl">销售人员</div></div>
+    <div class="stat amber"><div class="num">${rangeNewCustomers.length}</div><div class="lbl">${range.prefix}新增客户</div></div>
+    <div class="stat purple"><div class="num">${rangeHistoryFs.length}</div><div class="lbl">${range.prefix}跟进历史客户</div></div>
+    <div class="stat green"><div class="num">${mStats.total}万</div><div class="lbl">${range.label}签约额</div><div class="sub">${isMonthView?`目标${totalTarget}万 · ${totalTarget>0?Math.round(mStats.total/totalTarget*100):0}%`:`${mStats.count} 单`}</div></div>
+    <div class="stat orange"><div class="num">${mStats.collectionTotal}万</div><div class="lbl">应回款总额</div><div class="sub">${mStats.collectionTotal>mStats.total?'预付款包房折扣回款':'无折扣回款'}</div></div>
+  </div>
+
+  /* v19: 销售业绩排行榜 */
+  const ranking=allSales().map(s=>{
+    const sc=cs.filter(c=>c.salesId===s.id);
+    const ms=contractStatsInRange(sc,range.start,range.end);
+    const tgt=s.monthlyTarget||0;
+    const pct=isMonthView&&tgt>0?Math.round(ms.total/tgt*100):0;
+    return {s,ms,pct,custCount:sc.length,signedCount:ms.count};
+  }).sort((a,b)=>b.ms.total-a.ms.total);
+  const medalColors=['#FFD700','#C0C0C0','#CD7F32'];
+  html+=`
+  <div class="section-title">🏆 销售业绩排行榜 <span class="t3 sm">（按${range.label}签约额）</span></div>
+  <div class="card">`;
+  if(ranking.length===0){html+=`<div class="empty" style="padding:20px"><p>暂无销售数据</p></div>`}
+  else{
+    ranking.forEach((r,i)=>{
+      const rank=i+1;const medal=rank<=3?['🥇','🥈','🥉'][i]:`<span style="font-size:13px;color:var(--text-2)">${rank}</span>`;
+      const bg=rank<=3?`background:linear-gradient(90deg,${medalColors[i]}1a,transparent);border-left:3px solid ${medalColors[i]}`:'';
+      html+=`<div style="display:flex;align-items:center;padding:10px 8px;border-bottom:1px solid var(--border);${bg}">
+        <div style="width:36px;text-align:center;font-size:18px;font-weight:700">${medal}</div>
+        <div style="flex:1">
+          <div style="font-weight:600">${r.s.name} ${protectionBadge(r.s.hireDate)}</div>
+          <div class="xs t3" style="margin-top:2px"><span class="biz-tag" style="background:${BIZ_COLORS[r.s.businessLine]}22;color:${BIZ_COLORS[r.s.businessLine]}">${r.s.businessLine}</span> · ${r.custCount}客户 · ${r.signedCount}签约</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:16px;font-weight:700;color:var(--primary)">${r.ms.total}万</div>
+          ${r.ms.collectionTotal>r.ms.total?`<div class="xs" style="color:#f59e0b">回款${r.ms.collectionTotal}万</div>`:''}
+          ${isMonthView?`<div class="xs" style="color:${r.pct>=100?'var(--success)':'var(--warn)'}">完成${r.pct}%</div>`:''}
+        </div>
+      </div>`;
+    });
+  }
+  html+=`</div>
+
+  <div class="section-title">团队签约业绩 <span class="more" onclick="go('team')">详情 →</span></div>
+  <div class="perf-grid">`;
+  allSales().forEach(s=>{
+    const sc=cs.filter(c=>c.salesId===s.id);
+    const ms=contractStatsInRange(sc,range.start,range.end);
+    const tgt=s.monthlyTarget||0;
+    const pct=isMonthView&&tgt>0?Math.round(ms.total/tgt*100):0;
+    /* v4: 主签约类型 */
+    const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
+    /* v4: 保护期 badge */
+    const inProtection=isInProtection(s.hireDate);
+    html+=`<div class="perf-card">
+      <div class="pc-head"><div class="pc-name">${s.name} ${protectionBadge(s.hireDate)}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="flex between sm"><span class="t2">已签约 ${ms.count} 家 · ${ms.total}万</span>${isMonthView?`<span class="bold" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</span>`:''}</div>
+      ${isMonthView?`<div class="pc-target-bar"><span style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--success)':'var(--primary)'}"></span></div>
+      <div class="sm t3">月目标 ${tgt}万 · 完成 ${ms.total}万</div>`:`<div class="sm t3">${range.label}签约 ${ms.total}万 · ${ms.count} 单</div>`}
+      <div class="pc-types">${CONTRACT_TYPES.map(t=>`<div class="pc-type ${t===mainType?'main':'supplementary'}"><div class="pt-num" style="color:${CONTRACT_COLORS[t]}">${ms.byType[t].amount}万</div><div class="pt-lbl">${t}·${ms.byType[t].count}${t===mainType?' ★':''}</div></div>`).join('')}</div>
+    </div>`;
+  });
+  html+=`</div>
+
+  <div class="section-title">客户状态总览</div><div class="card">`;
+  STATUS_FLOW.forEach(k=>{const n=cs.filter(c=>c.status===k).length;const total=cs.length||1;
+    html+=`<div style="margin-bottom:10px"><div class="flex between sm mb8"><span><span class="status ${STATUS[k].cls}">${STATUS[k].label}</span></span><span class="t2">${n} 个</span></div><div class="progress"><span style="width:${n/total*100}%;background:${{'new':'#9aa3b8','potential':'#60a5fa','valid':'#f59e0b','intent':'#8b5cf6','review':'#ec4899','signed':'#22c55e'}[k]}"></span></div></div>`});
+  html+=`</div>
+
+  <div class="section-title">签约类型分布（${range.label}）</div><div class="card">`;
+  CONTRACT_TYPES.forEach(t=>{const amt=mStats.byType[t].amount;const cnt=mStats.byType[t].count;const coll=mStats.byType[t].collection;
+    const collStr=t==='预付款包房'&&coll>amt?`<span style="color:#f59e0b;margin-left:6px">回款${coll}万</span>`:'';
+    html+=`<div class="flex between center" style="margin-bottom:10px"><span><span class="pill" style="background:${CONTRACT_COLORS[t]}22;color:${CONTRACT_COLORS[t]}">${t}</span></span><span class="bold">${cnt} 单 · ${amt}万${collStr}</span></div>`});
+  html+=`</div>
+
+  <div class="section-title">业务线客户分布</div><div class="card">`;
+  BIZ_LINES.forEach(b=>{const n=cs.filter(c=>c.businessLine===b).length;
+    html+=`<div class="flex between center" style="margin-bottom:10px"><span><span class="pill" style="background:${BIZ_COLORS[b]}22;color:${BIZ_COLORS[b]}">${b}</span></span><span class="bold">${n} 个客户</span></div>`});
+  html+=`</div>
+
+  <div class="section-title">管理功能</div>
+    <div class="card card-tap" onclick="go('userForm',{mode:'add'})"><div class="flex between center"><span>➕ 添加销售账号</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="go('team')"><div class="flex between center"><span>👥 团队管理</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="go('hireAnalysis')"><div class="flex between center"><span>📅 入职产出分析</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="go('reports')"><div class="flex between center"><span>📊 全员报告</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="go('changePassword')"><div class="flex between center"><span>🔑 修改密码</span><span class="t3">›</span></div></div>
+    <div class="card card-tap" onclick="showExportMenu()"><div class="flex between center"><span>💾 导出数据（JSON/CSV）</span><span class="t3">›</span></div></div>
+  </div></div>`;
+  return html;
+}
+
+/* ---------- Team ---------- */
+/* v4: 保护期 badge + 主签约类型高亮 */
+function TeamView(){
+  const m=monthStr();
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('admin')">‹</button><h1>团队管理</h1></div>
+    <div class="h-right"><button class="back" onclick="go('userForm',{mode:'add'})" style="font-size:20px">➕</button></div></div>`;
+  html+=`<div class="content"><div class="container wide">`;
+  allSales().forEach(s=>{
+    const sc=DB.get('customers',[]).filter(c=>c.salesId===s.id);
+    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id);
+    const ms=contractStats(sc,m);
+    const tgt=s.monthlyTarget||0;const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+    /* v4: 主签约类型 */
+    const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
+    /* v4: 入职信息 */
+    const days=daysSinceHire(s.hireDate);
+    const inProtection=isInProtection(s.hireDate);
+    html+=`<div class="card">
+      <div class="card-row">
+        <div class="avatar" style="background:${avColor(s.name)};width:44px;height:44px">${s.name[0]}</div>
+        <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> · ${s.username}${s.hireDate?` · 入职 ${days} 天`:''}</div></div>
+        <button class="back" onclick="go('userForm',{mode:'edit',id:'${s.id}'})" style="font-size:13px;color:var(--primary)">编辑</button>
+      </div>
+      <div class="divider"></div>
+      <div class="kpi-grid" style="margin-bottom:8px">
+        <div class="kpi"><div class="k-num" style="color:var(--primary)">${sc.length}</div><div class="k-lbl">总客户</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--warn)">${sc.filter(c=>['valid','intent','review'].includes(c.status)).length}</div><div class="k-lbl">在跟进</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${ms.count}</div><div class="k-lbl">已签约</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${ms.total}万</div><div class="k-lbl">签约额${ms.collectionTotal>ms.total?`<div class="xs" style="color:#f59e0b">回款${ms.collectionTotal}万</div>`:''}</div></div>
+        <div class="kpi"><div class="k-num">${tgt}万</div><div class="k-lbl">月目标</div></div>
+        <div class="kpi"><div class="k-num" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</div><div class="k-lbl">完成率</div></div>
+      </div>
+      <div class="progress"><span style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--success)':'var(--primary)'}"></span></div>
+      <div class="pc-types" style="display:flex;gap:8px;margin-top:10px">${CONTRACT_TYPES.map(t=>`<div class="pc-type ${t===mainType?'main':'supplementary'}" style="flex:1;background:var(--bg);border-radius:8px;padding:8px;text-align:center${t===mainType?';border:2px solid '+CONTRACT_COLORS[t]:''}"><div class="pt-num" style="font-size:15px;font-weight:700;color:${CONTRACT_COLORS[t]}">${ms.byType[t].amount}万</div><div class="pt-lbl" style="font-size:11px;color:var(--text-2)">${t}·${ms.byType[t].count}${t===mainType?' ★':''}</div></div>`).join('')}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  return html;
+}
+
+/* ---------- User Form ---------- */
+/* v4: 新增 hireDate 字段 */
+function UserFormView(){
+  const edit=state.params.mode==='edit';
+  const u=edit?(DB.get('users',[]).find(x=>x.id===state.params.id)||{}):{};
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="back()">‹</button><h1>${edit?'编辑销售':'添加销售'}</h1></div></div>`;
+  html+=`<div class="content"><div class="container">
+    <div class="card">
+      <div class="form-group"><label>姓名 <span class="req">*</span></label><input id="uf-name" value="${esc(u.name||'')}" placeholder="销售姓名"></div>
+      <div class="form-group"><label>用户名 <span class="req">*</span></label><input id="uf-user" value="${esc(u.username||'')}" placeholder="登录用户名"></div>
+      <div class="form-group"><label>密码 <span class="req">*</span></label><input id="uf-pass" value="${esc(u.password||'')}" placeholder="登录密码"></div>
+      <div class="form-group"><label>分配业务线 <span class="req">*</span></label>
+        <select id="uf-biz">${BIZ_LINES.map(b=>`<option value="${b}" ${u.businessLine===b?'selected':''}>${b}</option>`).join('')}</select>
+        <div class="xs t3" style="margin-top:4px">每个销售主负责一条业务线，录入其他业务线客户将自动分配给对应销售</div>
+      </div>
+      <div class="form-group"><label>手机</label><input id="uf-phone" value="${esc(u.phone||'')}" placeholder="手机号"></div>
+      <div class="form-group"><label>入职日期 <span class="req">*</span></label><input id="uf-hireDate" type="date" value="${u.hireDate||''}"><div class="xs t3" style="margin-top:4px">入职 30 天内为新员工保护期，用于入职产出分析</div></div>
+      <div class="form-group"><label>月目标（万）<span class="req">*</span></label><input id="uf-target" type="number" value="${u.monthlyTarget||0}" placeholder="如：100"><div class="xs t3" style="margin-top:4px">用于计算完成率 = 本月签约额 / 月目标</div></div>
+    </div>
+    <div style="height:12px"></div>
+    <button class="btn btn-primary" onclick="saveUser(${edit?`'${u.id}'`:'null'})">保存</button>
+    ${edit?`<button class="btn btn-ghost" style="margin-top:8px" onclick="delUser('${u.id}')">删除账号</button>`:''}
+  </div></div>`;
+  return html;
+}
+/* v4: saveUser 保存 hireDate */
+function saveUser(id){
+  const name=$('#uf-name').value.trim();const username=$('#uf-user').value.trim();const pass=$('#uf-pass').value.trim();
+  if(!name||!username||!pass){toast('请填写完整信息');return}
+  const hireDate=$('#uf-hireDate')?$('#uf-hireDate').value:'';
+  if(!hireDate){toast('请选择入职日期');return}
+  let users=DB.get('users',[]);
+  if(!id&&users.find(u=>u.username===username)){toast('用户名已存在');return}
+  if(id){const i=users.findIndex(u=>u.id===id);users[i]={...users[i],name,username,password:pass,businessLine:$('#uf-biz').value,phone:$('#uf-phone').value.trim(),monthlyTarget:Number($('#uf-target').value)||0,hireDate};
+    let cs=DB.get('customers',[]);cs=cs.map(c=>c.salesId===id?{...c,salesName:name}:c);DB.set('customers',cs);
+  }else{users.push({id:uid(),name,username,password:pass,businessLine:$('#uf-biz').value,phone:$('#uf-phone').value.trim(),monthlyTarget:Number($('#uf-target').value)||0,hireDate,role:'sales'})}
+  DB.set('users',users);toast('已保存');go('team');
+}
+function delUser(id){
+  if(!confirm('删除该销售账号？其名下客户将保留但需重新分配。'))return;
+  DB.set('users',DB.get('users',[]).filter(u=>u.id!==id));toast('已删除');go('team');
+}
+
+/* ---------- Hire Analysis (v4 新增) ---------- */
+/* 管理员专属：分析每位销售的入职日期、保护期状态、入职以来产出 */
+function HireAnalysisView(){
+  const u=state.user;
+  if(u.role!=='admin'){go('dashboard');return ''}
+  let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('admin')">‹</button><h1>入职产出分析</h1></div></div>`;
+  html+=`<div class="content"><div class="container wide">`;
+  html+=`<div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff">
+    <div style="font-size:13px;opacity:.85">入职产出分析</div>
+    <div style="margin-top:6px;font-size:15px;font-weight:600">新员工保护期（入职 30 天内）产出跟踪</div>
+    <div class="xs" style="margin-top:6px;opacity:.85">保护期内员工产出数据将作为重点扶持参考</div>
+  </div>`;
+  const sales=allSales();
+  /* 保护期人数 */
+  const inProtectionCount=sales.filter(s=>isInProtection(s.hireDate)).length;
+  html+=`<div class="stat-grid" style="margin-top:12px">
+    <div class="stat blue"><div class="num">${sales.length}</div><div class="lbl">销售总数</div></div>
+    <div class="stat amber"><div class="num">${inProtectionCount}</div><div class="lbl">保护期内</div></div>
+    <div class="stat green"><div class="num">${sales.length-inProtectionCount}</div><div class="lbl">已过保护期</div></div>
+    <div class="stat purple"><div class="num">${sales.filter(s=>s.hireDate).length}</div><div class="lbl">已设置入职日期</div></div>
+  </div>`;
+
+  html+=`<div class="section-title">销售人员入职产出明细</div>`;
+  sales.forEach(s=>{
+    const days=daysSinceHire(s.hireDate);
+    const inProtection=isInProtection(s.hireDate);
+    const sc=DB.get('customers',[]).filter(c=>c.salesId===s.id);
+    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id);
+    const ms=contractStats(sc,monthStr());
+    const tgt=s.monthlyTarget||0;
+    const pct=tgt>0?Math.round(ms.total/tgt*100):0;
+    /* 入职以来产出 */
+    const signedSinceHire=sc.filter(c=>(c.contracts||[]).some(ct=>{
+      const d=ct.date||'';return d>=(s.hireDate||'');
+    }));
+    const signedAmtSinceHire=signedSinceHire.reduce((a,c)=>a+signedAmount(c),0);
+    const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
+    const cardBg=inProtection?'#fff3cd':'var(--bg)';
+    const cardBorder=inProtection?'#ffe69c':'var(--border)';
+    html+=`<div class="card" style="background:${cardBg};border-left:3px solid ${cardBorder}">
+      <div class="card-row">
+        <div class="avatar" style="background:${avColor(s.name)};width:44px;height:44px">${s.name[0]}</div>
+        <div style="flex:1">
+          <div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div>
+          <div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> · ${s.username}</div>
+        </div>
+        <button class="back" onclick="go('userForm',{mode:'edit',id:'${s.id}'})" style="font-size:13px;color:var(--primary)">编辑</button>
+      </div>
+      <div class="divider"></div>
+      <div class="form-row" style="gap:16px">
+        <div><div class="xs t3">入职日期</div><div class="bold" style="margin-top:2px">${s.hireDate||'未设置'}</div></div>
+        <div><div class="xs t3">入职天数</div><div class="bold" style="margin-top:2px;color:${inProtection?'#856404':'var(--text-1)'}">${days} 天</div></div>
+        <div><div class="xs t3">保护期状态</div><div class="bold" style="margin-top:2px;color:${inProtection?'#856404':'var(--text-2)'}">${inProtection?'🛡️ 保护期内':(days>0?'已过保护期':'未入职')}</div></div>
+      </div>`;
+    if(inProtection){
+      const remaining=30-days;
+      html+=`<div class="xs" style="margin-top:8px;color:#856404">⏰ 保护期剩余 ${remaining} 天，重点关注产出</div>`;
+    }else if(days>30){
+      html+=`<div class="xs t3" style="margin-top:8px">保护期已于 ${days-30} 天前结束</div>`;
+    }
+    html+=`<div class="divider"></div>
+      <div class="kpi-grid" style="margin-bottom:8px">
+        <div class="kpi"><div class="k-num" style="color:var(--primary)">${sc.length}</div><div class="k-lbl">总客户</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--warn)">${sc.filter(c=>['valid','intent','review'].includes(c.status)).length}</div><div class="k-lbl">在跟进</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${ms.count}</div><div class="k-lbl">本月签约</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${ms.total}万</div><div class="k-lbl">本月签约额${ms.collectionTotal>ms.total?`<div class="xs" style="color:#f59e0b">回款${ms.collectionTotal}万</div>`:''}</div></div>
+        <div class="kpi"><div class="k-num">${signedSinceHire.length}</div><div class="k-lbl">入职以来签约</div></div>
+        <div class="kpi"><div class="k-num" style="color:var(--success)">${signedAmtSinceHire}万</div><div class="k-lbl">入职以来签约额</div></div>
+      </div>
+      <div class="sm t3" style="margin-bottom:8px">月目标 ${tgt}万 · 完成 ${ms.total}万 · 完成率 ${pct}%</div>
+      <div class="progress" style="margin-bottom:10px"><span style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--success)':'var(--primary)'}"></span></div>
+      <div class="pc-types" style="display:flex;gap:8px">${CONTRACT_TYPES.map(t=>`<div class="pc-type ${t===mainType?'main':'supplementary'}" style="flex:1;background:rgba(255,255,255,.6);border-radius:8px;padding:8px;text-align:center${t===mainType?';border:2px solid '+CONTRACT_COLORS[t]:''}"><div class="pt-num" style="font-size:15px;font-weight:700;color:${CONTRACT_COLORS[t]}">${ms.byType[t].amount}万</div><div class="pt-lbl" style="font-size:11px;color:var(--text-2)">${t}·${ms.byType[t].count}${t===mainType?' ★':''}</div></div>`).join('')}</div>
+      ${renderHireMonthlyStats(s,sc,sf)}
+    </div>`;
+  });
+  html+=`</div></div>`;
+  return html;
+}
+
+/* v5: 入职按月产出明细 */
+function renderHireMonthlyStats(s,sc,sf){
+  if(!s.hireDate)return '';
+  const hireD=new Date(s.hireDate);
+  if(isNaN(hireD.getTime()))return '';
+  const nowD=new Date();
+  const months=[];
+  let y=hireD.getFullYear(),mo=hireD.getMonth();
+  const curY=nowD.getFullYear(),curM=nowD.getMonth();
+  while(y<curY||(y===curY&&mo<=curM)){
+    const mm=String(mo+1).padStart(2,'0');
+    const monthKey=`${y}-${mm}`;
+    const lastDay=new Date(y,mo+1,0).getDate();
+    const monthStart=monthKey+'-01';
+    const monthEnd=monthKey+'-'+String(lastDay).padStart(2,'0');
+    const monthSigned=sc.filter(c=>signedInRange(c,monthStart,monthEnd));
+    const monthAmt=monthSigned.reduce((a,c)=>a+signedAmount(c),0);
+    /* v6: 计算本月回款金额（仅预付款包房有折扣） */
+    const monthCollAmt=monthSigned.reduce((a,c)=>a+(c.contracts||[]).filter(ct=>(ct.date||'').startsWith(monthKey)&&ct.type==='预付款包房').reduce((s,ct)=>s+calcCollection(ct.amount,ct.discount)-ct.amount,0),0);
+    const monthNew=sc.filter(c=>(c.createdAt||'').startsWith(monthKey)).length;
+    const monthFsCount=sf.filter(f=>(f.followDate||'').startsWith(monthKey)).length;
+    months.push({key:monthKey,newCount:monthNew,followups:monthFsCount,signedCount:monthSigned.length,signedAmt:monthAmt,collAmt:monthCollAmt});
+    mo++;
+    if(mo>11){mo=0;y++}
+    if(months.length>=12)break;
+  }
+  if(!months.length)return '';
+  const curMonth=monthStr();
+  const maxAmt=Math.max(...months.map(m=>m.signedAmt),1);
+  const maxBarH=60;
+  let html=`<div class="divider"></div>
+    <div class="xs t3" style="margin-bottom:8px">按月产出明细（入职以来）</div>
+    <div class="hire-month-table">
+      <div class="hmt-row hmt-head">
+        <div>月份</div><div>新增</div><div>跟进</div><div>签约</div><div>签约额</div><div>回款额</div>
+      </div>`;
+  months.forEach(m=>{
+    const isCur=m.key===curMonth;
+    const hasSigned=m.signedAmt>0;
+    html+=`<div class="hmt-row ${isCur?'current':''}">
+      <div>${m.key}${isCur?'<span class="xs t3"> (本月)</span>':''}</div>
+      <div>${m.newCount}</div>
+      <div>${m.followups}</div>
+      <div style="color:${m.signedCount>0?'var(--success)':'var(--text-3)'}">${m.signedCount}</div>
+      <div style="color:${hasSigned?'var(--success)':'var(--text-3)'};font-weight:${hasSigned?'600':'400'}">${m.signedAmt}万</div>
+      <div style="color:${m.collAmt>0?'#f59e0b':'var(--text-3)'}">${m.collAmt>0?m.collAmt+'万':'-'}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  html+=`<div class="hire-month-chart" style="margin-top:10px">
+    <div class="xs t3" style="margin-bottom:6px">月签约额趋势（万）</div>
+    <div class="hmc-bars">
+      ${months.map(m=>{
+        const barH=Math.round(m.signedAmt/maxAmt*maxBarH);
+        return `<div class="hmc-bar-wrap">
+          <div class="hmc-val">${m.signedAmt}</div>
+          <div class="hmc-bar" style="height:${Math.max(barH,2)}px;background:${m.signedAmt>0?'var(--success)':'var(--border)'}"></div>
+          <div class="hmc-lbl">${m.key.slice(5)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  return html;
+}
+
+/* ---------- Export ---------- */
+/* v8: saveNextPlan - 先更新本地缓存，再 API 同步 */
+function saveNextPlan(salesId,weekEndKey){
+  const el=document.getElementById('nextPlan_'+salesId);
+  if(!el)return;
+  const val=el.value.trim();
+  const key=salesId+'_'+weekEndKey;
+  // 先更新本地缓存
+  let plans=DB.get('nextPlans',{});
+  plans[key]=val;
+  DB.set('nextPlans',plans);
+  toast('下周工作计划已保存');
+  // 后台同步到 API
+  api('POST','/api/nextPlan/'+key,{plan:val});
+}
+/* v19: 导出数据 - 支持JSON/CSV多格式，弹出菜单选择 */
+function showExportMenu(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.id='export-menu';
+  overlay.onclick=()=>overlay.remove();
+  overlay.innerHTML=`<div style="background:var(--card,#fff);border-radius:12px;padding:20px;width:100%;max-width:340px" onclick="event.stopPropagation()">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px">💾 导出数据</div>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;text-align:left" onclick="exportJSON()">📋 全量数据（JSON备份）</button>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;text-align:left" onclick="exportCustomersCSV()">👥 客户列表（CSV，可用Excel打开）</button>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;text-align:left" onclick="exportFollowupsCSV()">📝 跟进记录（CSV）</button>
+    <button class="btn btn-ghost" style="width:100%;margin-bottom:8px;text-align:left" onclick="exportReportsCSV()">📊 销售报告（CSV）</button>
+    <button class="btn btn-ghost" style="width:100%;text-align:left;color:var(--text-2)" onclick="document.getElementById('export-menu').remove()">取消</button>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+function csvEscape(v){v=String(v==null?'':v);if(v.includes(',')||v.includes('"')||v.includes('\n'))return '"'+v.replace(/"/g,'""')+'"';return v}
+function downloadBlob(blob,filename){
+  const link=document.createElement('a');link.download=filename;link.href=URL.createObjectURL(blob);link.style.display='none';
+  document.body.appendChild(link);link.click();setTimeout(()=>{document.body.removeChild(link);URL.revokeObjectURL(link.href)},300);
+}
+async function exportJSON(){
+  const r=await api('GET','/api/export');if(!r)return;
+  downloadBlob(new Blob([JSON.stringify(r,null,2)],{type:'application/json'}),'crm_export_'+todayStr()+'.json');
+  document.getElementById('export-menu')?.remove();toast('JSON已导出');
+}
+function exportCustomersCSV(){
+  const cs=DB.get('customers',[]);const users=DB.get('users',[]);
+  const header=['客户名称','联系人','联系电话','业务线','状态','销售','资金用途','意向金额(万)','签约总额(万)','回款总额(万)','创建日期','备注'];
+  const rows=cs.map(c=>{
+    const sales=users.find(u=>u.id===c.salesId);
+    const amt=signedAmount(c);
+    const coll=(c.contracts||[]).filter(ct=>ct.type==='预付款包房').reduce((s,ct)=>s+calcCollection(ct.amount,ct.discount),0);
+    return [c.name,c.contactName||'',c.contactPhone||'',c.businessLine,STATUS[c.status]?.label||c.status,sales?sales.name:'',c.fundUsage||'',c.intendedAmount||0,amt,coll,c.createdAt||'',c.remark||''];
+  });
+  const csv='\ufeff'+[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'客户列表_'+todayStr()+'.csv');
+  document.getElementById('export-menu')?.remove();toast(`已导出 ${cs.length} 个客户`);
+}
+function exportFollowupsCSV(){
+  const fs=DB.get('followups',[]);const cs=DB.get('customers',[]);
+  const header=['跟进日期','客户名称','业务线','销售','跟进内容','状态变更','下一步行动','创建时间'];
+  const rows=fs.map(f=>{const c=cs.find(x=>x.id===f.customerId);return [f.followDate,f.customerName||c?.name||'',f.businessLine,f.salesName,f.content||'',f.statusChange||'',f.nextAction||'',f.createdAt||'']});
+  const csv='\ufeff'+[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'跟进记录_'+todayStr()+'.csv');
+  document.getElementById('export-menu')?.remove();toast(`已导出 ${fs.length} 条跟进`);
+}
+function exportReportsCSV(){
+  const rs=DB.get('reports',[]);
+  const header=['日期','销售','业务线','今日新增','今日有效','本周有效','本周意向','意向金额(万)','签约客户数','签约总额(万)','问题','需协助','摘要'];
+  const rows=rs.map(r=>{const signedAmt=(r.signedCustomers||[]).reduce((s,sc)=>s+(sc.amount||0),0);return [r.date,r.salesName,r.businessLine,r.todayNewCount,r.todayValidCount,r.weekValidCount,r.weekIntentCount,r.weekIntentAmount,(r.signedCustomers||[]).length,signedAmt,r.problems||'',r.needHelp||'',r.summary||'']});
+  const csv='\ufeff'+[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
+  downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'销售报告_'+todayStr()+'.csv');
+  document.getElementById('export-menu')?.remove();toast(`已导出 ${rs.length} 份报告`);
+}
+/* 兼容旧调用 */
+const exportData=showExportMenu;
+
+render();
+</script>
+</body>
+</html>

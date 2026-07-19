@@ -1,0 +1,23 @@
+# Render 部署配置（免费 Starter）
+# 使用方法：在 Render 控制台选择 "New → Blueprint" 并连接 GitHub 仓库
+services:
+  - type: web
+    name: jwpz-crm
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DB_PATH
+        value: ./data
+    # 数据持久化说明：
+    # 免费套餐(free)无持久磁盘，重启/重新部署后数据会重置为种子数据
+    # 如需数据持久化，升级到 Starter 套餐($7/月)并添加持久磁盘：
+    # disk:
+    #   name: crm-data
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1
