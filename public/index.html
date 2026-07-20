@@ -365,7 +365,7 @@ a{color:var(--primary);text-decoration:none}
 const BIZ_LINES = ['预付款包房','品牌加盟','智能体平台','代运营'];
 const BIZ_COLORS = {'预付款包房':'#4f7cff','品牌加盟':'#8b5cf6','智能体平台':'#22c55e','代运营':'#f59e0b'};
 const CONTRACT_TYPES = ['预付款包房','代运营','加盟'];
-const CONTRACT_COLORS = {'预付款包房':'#4f7cff','代运营':'#f59e0b','加盟':'#f59e0b'};
+const CONTRACT_COLORS = {'预付款包房':'#4f7cff','代运营':'#f59e0b','加盟':'#8b5cf6'};
 /* v6: 预付款包房回款金额计算：回款=签约金额÷折扣，取整 */
 function calcCollection(amount,discount){
   const d=Number(discount)||1;
@@ -433,7 +433,10 @@ async function refreshData() {
     DATA.followups=r.followups;
     DATA.reports=r.reports;
     DATA.nextPlans=r.nextPlans||{};
-    render();
+    /* 正在填写表单时只更新缓存，不重新渲染（避免清空正在输入的表单） */
+    if(!FORM_VIEWS.includes(state.view)){
+      render();
+    }
   }
 }
 let _refreshTimer;
@@ -481,6 +484,8 @@ function autoSaveDraft(){
     const nameEl=$('#cf-name'),contactEl=$('#cf-contact'),phoneEl=$('#cf-phone');
     const bizEl=$('#cf-biz'),statusEl=$('#cf-status'),intentEl=$('#cf-intent');
     const fundEl=$('#cf-fundUsage'),docsEl=$('#cf-docsDate'),remarkEl=$('#cf-remark');
+    const roomEl=$('#cf-roomCount'),diamondEl=$('#cf-ctripDiamond'),openDateEl=$('#cf-openDate');
+    const ctripRevEl=$('#cf-ctripRevenue'),meituanRevEl=$('#cf-meituanRevenue'),fliggyRevEl=$('#cf-fliggyRevenue');
     if(nameEl)data.name=nameEl.value;
     if(contactEl)data.contactName=contactEl.value;
     if(phoneEl)data.contactPhone=phoneEl.value;
@@ -490,6 +495,12 @@ function autoSaveDraft(){
     if(fundEl)data.fundUsage=fundEl.value;
     if(docsEl)data.docsCompletedDate=docsEl.value;
     if(remarkEl)data.remark=remarkEl.value;
+    if(roomEl)data.roomCount=roomEl.value;
+    if(diamondEl)data.ctripDiamond=diamondEl.value;
+    if(openDateEl)data.openDate=openDateEl.value;
+    if(ctripRevEl)data.ctripMonthlyRevenue=ctripRevEl.value;
+    if(meituanRevEl)data.meituanMonthlyRevenue=meituanRevEl.value;
+    if(fliggyRevEl)data.fliggyMonthlyRevenue=fliggyRevEl.value;
     data.mode=state.params.mode;
     if(state.params.id)data.editId=state.params.id;
   }else if(v==='followupForm'){
@@ -512,12 +523,14 @@ function autoSaveDraft(){
   if(hasContent)saveDraft(v,data);
 }
 
-/* 恢复草稿到表单字段（页面render后调用） */
+/* 恢复草稿到表单字段（页面render后调用，每次进入视图只恢复一次） */
 function restoreDraft(){
   if(!FORM_VIEWS.includes(state.view))return;
+  if(state._draftRestored)return;  /* 防止重复恢复导致toast循环 */
   const d=loadDraft(state.view);
   if(!d)return;
   const v=state.view;
+  state._draftRestored=true;  /* 标记已恢复，避免render循环触发 */
   setTimeout(()=>{
     if(v==='customerForm'){
       /* 只在新增模式恢复，编辑模式不恢复（已有数据） */
@@ -531,6 +544,12 @@ function restoreDraft(){
         if(d.fundUsage&&$('#cf-fundUsage'))$('#cf-fundUsage').value=d.fundUsage;
         if(d.docsCompletedDate&&$('#cf-docsDate'))$('#cf-docsDate').value=d.docsCompletedDate;
         if(d.remark&&$('#cf-remark'))$('#cf-remark').value=d.remark;
+        if(d.roomCount&&$('#cf-roomCount'))$('#cf-roomCount').value=d.roomCount;
+        if(d.ctripDiamond&&$('#cf-ctripDiamond'))$('#cf-ctripDiamond').value=d.ctripDiamond;
+        if(d.openDate&&$('#cf-openDate'))$('#cf-openDate').value=d.openDate;
+        if(d.ctripMonthlyRevenue&&$('#cf-ctripRevenue'))$('#cf-ctripRevenue').value=d.ctripMonthlyRevenue;
+        if(d.meituanMonthlyRevenue&&$('#cf-meituanRevenue'))$('#cf-meituanRevenue').value=d.meituanMonthlyRevenue;
+        if(d.fliggyMonthlyRevenue&&$('#cf-fliggyRevenue'))$('#cf-fliggyRevenue').value=d.fliggyMonthlyRevenue;
         toast('已恢复未保存的草稿');
       }
     }else if(v==='followupForm'){
@@ -579,7 +598,7 @@ function confirmLeave(ok){
   render();
 }
 
-function go(view,params={}){state.history.push({view:state.view,params:state.params});state.view=view;state.params=params;render();window.scrollTo(0,0);startDraftAutoSave()}
+function go(view,params={}){state.history.push({view:state.view,params:state.params});state.view=view;state.params=params;state._draftRestored=false;render();window.scrollTo(0,0);startDraftAutoSave()}
 function back(){
   if(hasUnsavedChanges()){
     state.confirmLeave={targetView:'back',targetParams:{}};
@@ -587,7 +606,7 @@ function back(){
     return;
   }
   clearDraft(state.view);
-  if(state.history.length>0){const h=state.history.pop();state.view=h.view;state.params=h.params;render();window.scrollTo(0,0)}else{go('dashboard')}
+  if(state.history.length>0){const h=state.history.pop();state.view=h.view;state.params=h.params;state._draftRestored=false;render();window.scrollTo(0,0)}else{go('dashboard')}
 }
 
 /* ---------- Auth ---------- */
@@ -1161,6 +1180,26 @@ function CustomerDetailView(){
         <div><div class="xs t3">联系人</div><div class="bold" style="margin-top:2px">${esc(c.contactName)||'-'}</div></div>
         <div><div class="xs t3">联系电话</div><div class="bold" style="margin-top:2px">${esc(c.contactPhone)||'-'}</div></div>
       </div>`;
+  /* v27: 酒店信息区 */
+  const hasHotelInfo=c.roomCount||c.ctripDiamond&&c.ctripDiamond!=='未评级'||c.openDate||c.ctripMonthlyRevenue||c.meituanMonthlyRevenue||c.fliggyMonthlyRevenue;
+  if(hasHotelInfo){
+    html+=`<div class="divider"></div><div class="xs t3" style="margin-bottom:6px;font-weight:600">酒店信息</div>`;
+    html+=`<div class="form-row" style="gap:16px">`;
+    if(c.roomCount)html+=`<div><div class="xs t3">房间数量</div><div class="bold" style="margin-top:2px">${c.roomCount}间</div></div>`;
+    if(c.ctripDiamond&&c.ctripDiamond!=='未评级')html+=`<div><div class="xs t3">携程钻级</div><div class="bold" style="margin-top:2px;color:#f59e0b">${c.ctripDiamond}</div></div>`;
+    if(c.openDate)html+=`<div><div class="xs t3">开业时间</div><div class="bold" style="margin-top:2px">${c.openDate}</div></div>`;
+    html+=`</div>`;
+    const onlineTotal=(Number(c.ctripMonthlyRevenue||0)+Number(c.meituanMonthlyRevenue||0)+Number(c.fliggyMonthlyRevenue||0));
+    if(onlineTotal>0){
+      html+=`<div style="margin-top:8px"><div class="xs t3">线上月流水</div>`;
+      html+=`<div class="form-row" style="gap:12px;margin-top:4px">`;
+      if(c.ctripMonthlyRevenue)html+=`<div class="pill" style="background:#4f7cff22;color:#4f7cff">携程 ${c.ctripMonthlyRevenue}万</div>`;
+      if(c.meituanMonthlyRevenue)html+=`<div class="pill" style="background:#f59e0b22;color:#f59e0b">美团 ${c.meituanMonthlyRevenue}万</div>`;
+      if(c.fliggyMonthlyRevenue)html+=`<div class="pill" style="background:#22c55e22;color:#22c55e">飞猪 ${c.fliggyMonthlyRevenue}万</div>`;
+      html+=`</div>`;
+      html+=`<div class="flex between center" style="margin-top:6px"><span class="t2 sm">线上月流水合计</span><span class="bold" style="color:var(--primary)">${onlineTotal}万</span></div></div>`;
+    }
+  }
   /* v4: 资金用途 */
   if(c.fundUsage){
     html+=`<div class="divider"></div><div class="xs t3">资金用途</div><div class="sm" style="margin-top:4px;line-height:1.6">${esc(c.fundUsage)}</div>`;
@@ -1288,6 +1327,26 @@ function CustomerFormView(){
       <div class="form-group"><label>备注</label><textarea id="cf-remark" placeholder="客户背景、需求、风险等">${esc(c.remark||'')}</textarea></div>
     </div>
     <div class="card">
+      <div class="xs t3" style="margin-bottom:8px;font-weight:600">酒店信息</div>
+      <div class="form-row">
+        <div class="form-group"><label>房间数量</label><input id="cf-roomCount" type="number" value="${c.roomCount||''}" placeholder="如：120" min="0"></div>
+        <div class="form-group"><label>携程钻级</label>
+          <select id="cf-ctripDiamond">${['未评级','1钻','2钻','2钻半','3钻','3钻半','4钻','4钻半','5钻'].map(d=>`<option value="${d}" ${c.ctripDiamond===d?'selected':''}>${d}</option>`).join('')}</select>
+        </div>
+      </div>
+      <div class="form-group"><label>开业时间</label><input id="cf-openDate" type="date" value="${c.openDate||''}"></div>
+      <div class="divider"></div>
+      <div class="xs t3" style="margin-bottom:4px">线上月流水（万）</div>
+      <div class="form-row">
+        <div class="form-group"><label>携程</label><input id="cf-ctripRevenue" type="number" value="${c.ctripMonthlyRevenue||''}" placeholder="0" min="0" step="0.1"></div>
+        <div class="form-group"><label>美团</label><input id="cf-meituanRevenue" type="number" value="${c.meituanMonthlyRevenue||''}" placeholder="0" min="0" step="0.1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>飞猪</label><input id="cf-fliggyRevenue" type="number" value="${c.fliggyMonthlyRevenue||''}" placeholder="0" min="0" step="0.1"></div>
+        <div class="form-group"><label>线上月流水合计</label><input id="cf-onlineTotal" type="number" value="${(Number(c.ctripMonthlyRevenue||0)+Number(c.meituanMonthlyRevenue||0)+Number(c.fliggyMonthlyRevenue||0))||''}" placeholder="自动计算" readonly style="background:#f5f5f5"></div>
+      </div>
+    </div>
+    <div class="card">
       <div class="form-group"><label>签约合同 <span class="t3 sm">（已签约客户请添加合同明细）</span></label>
         <div class="contract-list" id="contract-list"></div>
         <div class="add-contract-btn" onclick="addContractRow()">+ 添加合同</div>
@@ -1297,7 +1356,7 @@ function CustomerFormView(){
     <button class="btn btn-primary" onclick="saveCustomer(${edit?`'${c.id}'`:'null'})">保存客户</button>
     ${edit?`<button class="btn btn-ghost" style="margin-top:8px" onclick="delCustomer('${c.id}')">删除客户</button>`:''}
   </div></div>`;
-  setTimeout(()=>{renderContractList();bindStatusChange()},0);
+  setTimeout(()=>{renderContractList();bindStatusChange();bindOnlineRevenueCalc()},0);
   return html;
 }
 function bindStatusChange(){
@@ -1307,6 +1366,15 @@ function bindStatusChange(){
     const g=document.getElementById('cf-intent-group');
     if(g)g.style.display=sel.value==='intent'?'block':'none';
   });
+}
+/* v27: 线上月流水自动计算 */
+function bindOnlineRevenueCalc(){
+  const fields=['cf-ctripRevenue','cf-meituanRevenue','cf-fliggyRevenue'];
+  const totalEl=document.getElementById('cf-onlineTotal');
+  if(!totalEl)return;
+  const calc=()=>{totalEl.value=((Number($('#cf-ctripRevenue')?.value||0)+Number($('#cf-meituanRevenue')?.value||0)+Number($('#cf-fliggyRevenue')?.value||0))||'')};
+  fields.forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',calc)});
+  calc();
 }
 function renderContractList(){
   const el=document.getElementById('contract-list');
@@ -1349,13 +1417,22 @@ function saveCustomer(id){
   /* v4: 新增 fundUsage 和 docsCompletedDate 字段 */
   const fundUsage=$('#cf-fundUsage')?$('#cf-fundUsage').value.trim():'';
   const docsCompletedDate=$('#cf-docsDate')?$('#cf-docsDate').value:'';
+  /* v27: 酒店信息字段 */
+  const roomCount=$('#cf-roomCount')?Number($('#cf-roomCount').value)||0:0;
+  const ctripDiamond=$('#cf-ctripDiamond')?$('#cf-ctripDiamond').value:'未评级';
+  const openDate=$('#cf-openDate')?$('#cf-openDate').value:'';
+  const ctripMonthlyRevenue=$('#cf-ctripRevenue')?Number($('#cf-ctripRevenue').value)||0:0;
+  const meituanMonthlyRevenue=$('#cf-meituanRevenue')?Number($('#cf-meituanRevenue').value)||0:0;
+  const fliggyMonthlyRevenue=$('#cf-fliggyRevenue')?Number($('#cf-fliggyRevenue').value)||0:0;
   const data={
     name,contactName:$('#cf-contact').value.trim(),contactPhone:$('#cf-phone').value.trim(),
     businessLine:biz,status,remark:$('#cf-remark').value.trim(),
     intendedAmount:status==='intent'?intentAmt:0,
     contracts,
     fundUsage,
-    docsCompletedDate
+    docsCompletedDate,
+    roomCount,ctripDiamond,openDate,
+    ctripMonthlyRevenue,meituanMonthlyRevenue,fliggyMonthlyRevenue
   };
   if(contracts.length>0&&data.status!=='signed'){data.status='signed'}
   let customers=DB.get('customers',[]);
@@ -1490,16 +1567,20 @@ function ReportsView(){
       return {s,sc,ms,conv,todayNew,weekNew};
     });
     /* 总览 */
-    html+=`<div class="section-title">全员总览（本月 ${m}）</div>
+    html+=`<div class="section-title">全员总览（本月 ${m}）<span class="more" onclick="exportAllOverviewImage()">📷 图片 →</span></div>
+    <div id="all-overview-capture">
     <div class="card" style="background:linear-gradient(135deg,#4f7cff,#6a8dff);color:#fff">
-      <div style="font-size:13px;opacity:.85">${m} 全员业绩总览</div>
+      <div style="font-size:15px;font-weight:700;opacity:.95">${m} 久窝朋赞 · 全员日报</div>
+      <div style="font-size:11px;opacity:.7;margin-top:4px">目标 ${allSales().reduce((a,s)=>a+(s.monthlyTarget||0),0)}万 | 生成时间 ${today}</div>
       <div class="kpi-grid" style="margin-top:10px;margin-bottom:0">
         <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.total}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">总客户</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allCs.filter(c=>(c.createdAt||'')>=wr.start&&(c.createdAt||'')<=wr.end).length}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周新增</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allFs.filter(f=>f.followDate>=wr.start&&f.followDate<=wr.end).length}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">本周跟进</div></div>
         <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.signed}</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">已签约</div></div>
         <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.total}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">签约金额</div></div>
         <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${mStats.collectionTotal}万</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">应回款</div></div>
-        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.convRate}%</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">整体转化率</div></div>
-        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.avgCycle}天</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">平均转化周期</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.convRate}%</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">转化率</div></div>
+        <div class="kpi" style="background:rgba(255,255,255,.15)"><div class="k-num" style="color:#fff">${allConv.avgCycle}天</div><div class="k-lbl" style="color:rgba(255,255,255,.8)">平均周期</div></div>
       </div>
     </div>`;
 
@@ -1530,6 +1611,8 @@ function ReportsView(){
     });
     html+=`</tbody></table></div>`;
   }
+  /* 关闭全员总览截取区域 */
+  if(isAdmin)html+=`</div>`;
   html+=`<div class="section-title">日报列表 ${!isAdmin?`<span class="more" onclick="genTodayReport()">生成今日 →</span>`:''}</div>`;
   if(reports.length===0)html+=`<div class="card"><div class="empty"><div class="em-ico">📊</div><p>暂无日报<br>${isAdmin?'':`点击"生成今日"创建`}</p></div></div>`;
   else reports.forEach(r=>{
@@ -2161,6 +2244,46 @@ async function exportReportImage(reportId,type){
   savedBtns.forEach(s=>{s.el.style.display=''});
 }
 
+async function exportAllOverviewImage(){
+  toast('正在生成全员日报图片...');
+  const el=document.getElementById('all-overview-capture');
+  if(!el){toast('未找到全员总览内容');return}
+  try{
+    const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false,allowTaint:true});
+    const name=`全员日报_${monthStr()}_${todayStr()}`;
+    const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isWeixin=/MicroMessenger/i.test(navigator.userAgent);
+    const triggerDownload=(url,filename)=>{
+      const link=document.createElement('a');
+      link.download=filename;link.href=url;link.style.display='none';
+      document.body.appendChild(link);link.click();
+      setTimeout(()=>{document.body.removeChild(link);if(url.startsWith('blob:'))URL.revokeObjectURL(url)},300);
+    };
+    const showImagePreview=(dataUrl)=>{
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML=`<div style="color:#fff;font-size:16px;margin-bottom:12px;font-weight:600">长按下方图片保存到手机</div>
+        <img src="${dataUrl}" style="max-width:100%;max-height:72vh;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5)">
+        <div style="color:#9aa3b8;font-size:12px;margin-top:10px">如未自动下载，请长按图片选择"保存图像"</div>
+        <button onclick="this.parentNode.remove()" style="margin-top:16px;padding:10px 28px;background:#4f7cff;color:#fff;border:none;border-radius:20px;font-size:15px">关闭</button>`;
+      document.body.appendChild(overlay);
+    };
+    if(isWeixin||isMobile){
+      canvas.toBlob((blob)=>{
+        if(blob){triggerDownload(URL.createObjectURL(blob),name+'.png')}
+        const dataUrl=canvas.toDataURL('image/png');
+        showImagePreview(dataUrl);
+        toast('长按图片即可保存');
+      },'image/png',0.95);
+    }else{
+      canvas.toBlob((blob)=>{
+        if(blob){triggerDownload(URL.createObjectURL(blob),name+'.png');toast('全员日报图片已保存')}
+        else{triggerDownload(canvas.toDataURL('image/png'),name+'.png');toast('全员日报图片已保存')}
+      },'image/png',0.95);
+    }
+  }catch(e){toast('生成失败：'+e.message)}
+}
+
 /* ---------- Bottom Nav ---------- */
 function BottomNav(isAdmin){
   const v=state.view;
@@ -2459,14 +2582,19 @@ async function saveUser(id){
   if(!hireDate){toast('请选择入职日期');return}
   const bizLine=$('#uf-biz').value;const phone=$('#uf-phone').value.trim();const target=Number($('#uf-target').value)||0;
   if(id){
+    // 检查用户名是否与其他用户重复
+    if(DB.get('users',[]).find(u=>u.id!==id&&u.username===username)){toast('用户名已存在');return}
+    // 备份本地数据（API失败时回滚）
+    const oldUsers=DB.get('users',[]);const oldCustomers=DB.get('customers',[]);
     // 更新本地缓存
-    let users=DB.get('users',[]);const i=users.findIndex(u=>u.id===id);
+    let users=oldUsers;const i=users.findIndex(u=>u.id===id);
     users[i]={...users[i],name,username,password:pass,businessLine:bizLine,phone,monthlyTarget:target,hireDate};
     DB.set('users',users);
-    let cs=DB.get('customers',[]);cs=cs.map(c=>c.salesId===id?{...c,salesName:name}:c);DB.set('customers',cs);
+    let cs=oldCustomers;cs=cs.map(c=>c.salesId===id?{...c,salesName:name}:c);DB.set('customers',cs);
     // 同步到后端
     const r=await api('PUT','/api/users/'+id,{name,username,password:pass,businessLine:bizLine,phone,monthlyTarget:target,hireDate});
     if(r&&r.success){DB.set('users',r.users);if(r.customers)DB.set('customers',r.customers);}
+    else{DB.set('users',oldUsers);DB.set('customers',oldCustomers);toast(r&&r.msg?r.msg:'保存失败，请重试');return}
   }else{
     if(DB.get('users',[]).find(u=>u.username===username)){toast('用户名已存在');return}
     const newId=uid();
@@ -2476,18 +2604,20 @@ async function saveUser(id){
     // 同步到后端
     const r=await api('POST','/api/users',u);
     if(r&&r.success){DB.set('users',r.users);}
-    else{toast('添加失败，请重试');return}
+    else{DB.set('users',DB.get('users',[]).filter(u=>u.id!==newId));toast(r&&r.msg?r.msg:'添加失败，请重试');return}
   }
   toast('已保存');go('team');
 }
 async function delUser(id){
   if(!confirm('删除该销售账号？其名下客户将保留但需重新分配。'))return;
+  // 备份本地数据（API失败时回滚）
+  const oldUsers=DB.get('users',[]);
   // 更新本地缓存
-  DB.set('users',DB.get('users',[]).filter(u=>u.id!==id));
+  DB.set('users',oldUsers.filter(u=>u.id!==id));
   // 同步到后端
   const r=await api('DELETE','/api/users/'+id);
   if(r&&r.success){DB.set('users',r.users);}
-  else{toast('删除失败，请重试');return}
+  else{DB.set('users',oldUsers);toast(r&&r.msg?r.msg:'删除失败，请重试');return}
   toast('已删除');go('team');
 }
 
