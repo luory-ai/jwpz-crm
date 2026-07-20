@@ -447,7 +447,7 @@ function startRefresh(){
 
 /* ---------- Draft auto-save (防误触丢数据) ---------- */
 /* 表单视图列表：这些视图的草稿需要自动保存和恢复 */
-const FORM_VIEWS = ['customerForm','followupForm','reportDetail','userForm','changePassword'];
+const FORM_VIEWS = ['customerForm','followupForm','customerDetail','reportDetail','userForm','changePassword'];
 const DRAFT_KEY = 'jwpz_crm_drafts';
 
 /* 获取所有草稿 */
@@ -550,7 +550,7 @@ function restoreDraft(){
         if(d.ctripMonthlyRevenue&&$('#cf-ctripRevenue'))$('#cf-ctripRevenue').value=d.ctripMonthlyRevenue;
         if(d.meituanMonthlyRevenue&&$('#cf-meituanRevenue'))$('#cf-meituanRevenue').value=d.meituanMonthlyRevenue;
         if(d.fliggyMonthlyRevenue&&$('#cf-fliggyRevenue'))$('#cf-fliggyRevenue').value=d.fliggyMonthlyRevenue;
-        toast('已恢复未保存的草稿');
+        toastLite('已恢复未保存的草稿');
       }
     }else if(v==='followupForm'){
       if(d.customerId&&$('#fu-cust'))$('#fu-cust').value=d.customerId;
@@ -558,12 +558,12 @@ function restoreDraft(){
       if(d.statusChange&&$('#fu-status'))$('#fu-status').value=d.statusChange;
       if(d.content&&$('#fu-content'))$('#fu-content').value=d.content;
       if(d.nextAction&&$('#fu-next'))$('#fu-next').value=d.nextAction;
-      toast('已恢复未保存的草稿');
+      toastLite('已恢复未保存的草稿');
     }else if(v==='reportDetail'){
-      if(d.summary&&$('#rd-summary'))$('#rd-summary').value=d.summary;
-      if(d.problems&&$('#rd-problems'))$('#rd-problems').value=d.problems;
-      if(d.needHelp&&$('#rd-needHelp'))$('#rd-needHelp').value=d.needHelp;
-      toast('已恢复未保存的草稿');
+      if(d.summary&&$('#rp-summary'))$('#rp-summary').value=d.summary;
+      if(d.problems&&$('#rp-problems'))$('#rp-problems').value=d.problems;
+      if(d.needHelp&&$('#rp-help'))$('#rp-help').value=d.needHelp;
+      toastLite('已恢复未保存的草稿');
     }
   },50);
 }
@@ -577,6 +577,13 @@ function startDraftAutoSave(){
 
 /* ---------- State ---------- */
 function toast(msg){state.toast=msg;render();setTimeout(()=>{state.toast=null;render()},1600)}
+/* v31: 轻量toast，不触发full render（防止草稿恢复值被清空） */
+function toastLite(msg){
+  const el=document.querySelector('.toast');
+  if(el){el.textContent=msg;el.style.display='block'}
+  else{const d=document.createElement('div');d.className='toast';d.textContent=msg;document.querySelector('.app-shell')?.appendChild(d)}
+  setTimeout(()=>{const e=document.querySelector('.toast');if(e)e.style.display='none'},1600);
+}
 
 /* v24: 安全导航 — 表单页有未保存数据时弹出确认 */
 function safeGo(view,params={}){
@@ -640,6 +647,9 @@ const monthStr=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMo
 const uid=()=>'id_'+Date.now()+Math.random().toString(36).slice(2,7);
 const avColor=name=>{const cs=['#4f7cff','#8b5cf6','#22c55e','#f59e0b','#ec4899','#06b6d4'];let h=0;for(let i=0;i<name.length;i++)h=name.charCodeAt(i)+((h<<5)-h);return cs[Math.abs(h)%cs.length]};
 const esc=s=>(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* v31: 业务线颜色兜底，防止 undefined 显示为 undefined22 */
+const bizColor=b=>BIZ_COLORS[b||'预付款包房']||'#4f7cff';
+const bizLabel=b=>b||'未分配';
 
 /* v4: 入职日期相关辅助函数 */
 function daysSinceHire(hireDate){
@@ -897,7 +907,7 @@ function DashboardView(){
     <div class="stat blue"><div class="num">${todayNewCustomers.length}</div><div class="lbl">今日新增客户</div></div>
     <div class="stat amber"><div class="num">${todayHistoryFs.length}</div><div class="lbl">今日跟进历史客户</div></div>
     <div class="stat purple"><div class="num">${intentCount}</div><div class="lbl">意向客户</div></div>
-    <div class="stat green"><div class="num">${mStats.total}万</div><div class="lbl">本月签约额</div><div class="sub">${signedCustomers.length}家 · ${completion}%完成</div></div>
+    <div class="stat green"><div class="num">${mStats.total}万</div><div class="lbl">本月签约额</div><div class="sub">${signedCustomers.length}家 · ${isAdmin?'全员':completion+'%完成'}</div></div>
     <div class="stat orange"><div class="num">${mStats.collectionTotal}万</div><div class="lbl">应回款总额</div><div class="sub">${mStats.collectionTotal>mStats.total?`预付款包房折扣回款`:`无折扣回款`}</div></div>
   </div>
 
@@ -925,7 +935,7 @@ function DashboardView(){
       const isNew=cust&&cust.createdAt===today;
       const typeTag=isNew?'<span class="cust-type-tag new">新客户</span>':'<span class="cust-type-tag history">历史客户</span>';
       html+=`<div class="card card-tap" onclick="go('customerDetail',{id:'${f.customerId}'})">
-        <div class="card-row"><div class="card-title">${f.content.length>40?f.content.slice(0,40)+'...':f.content}</div><span class="status ${STATUS[f.statusChange]?.cls||'s-new'}">${STATUS[f.statusChange]?.label||'跟进'}</span></div>
+        <div class="card-row"><div class="card-title">${((f.content||'').length>40)?(f.content||'').slice(0,40)+'...':(f.content||'')}</div><span class="status ${STATUS[f.statusChange]?.cls||'s-new'}">${STATUS[f.statusChange]?.label||'跟进'}</span></div>
         <div class="card-sub sm" style="margin-top:6px">${f.customerName} ${typeTag}</div>
         ${f.nextAction?`<div class="tl-next">下一步：${f.nextAction}</div>`:''}
       </div>`;
@@ -941,14 +951,14 @@ function DashboardView(){
       html+=`<div class="card card-tap" onclick="go('team')">
         <div class="card-row">
           <div class="avatar" style="background:${avColor(s.name)};width:40px;height:40px;font-size:15px">${s.name[0]}</div>
-          <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> 今日 ${sf.length} · 签约 ${ms.total}万/${tgt}万</div></div>
+          <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span> 今日 ${sf.length} · 签约 ${ms.total}万/${tgt}万</div></div>
           <div style="text-align:right"><div class="bold" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</div><div class="xs t3">完成率</div></div>
         </div>
       </div>`;
     });
     html+=`<div class="section-title">客户状态分布</div><div class="card">`;
     const allCs=DB.get('customers',[]);
-    STATUS_FLOW.forEach(k=>{const n=allCs.filter(c=>c.status===k).length;
+    STATUS_FLOW.forEach(k=>{const n=allCs.filter(c=>(c.status||'new')===k).length;
       const total=allCs.length||1;
       html+=`<div style="margin-bottom:10px"><div class="flex between sm mb8"><span><span class="status ${STATUS[k].cls}">${STATUS[k].label}</span></span><span class="t2">${n} 个 · ${Math.round(n/total*100)}%</span></div><div class="progress"><span style="width:${n/total*100}%;background:${{'new':'#9aa3b8','potential':'#60a5fa','valid':'#f59e0b','intent':'#8b5cf6','review':'#ec4899','signed':'#22c55e'}[k]}"></span></div></div>`});
     html+=`</div>`;
@@ -986,7 +996,7 @@ function CustomersView(){
 function renderCustList(list){
   if(list.length===0)return `<div class="empty" style="grid-column:1/-1"><div class="em-ico">👥</div><p>暂无客户<br>点击右上角 + 新增</p></div>`;
   return list.map(c=>{
-    const lastF=myFollowups().filter(f=>f.customerId===c.id).sort((a,b)=>b.followDate.localeCompare(a.followDate))[0];
+    const lastF=myFollowups().filter(f=>f.customerId===c.id).sort((a,b)=>(b.followDate||'').localeCompare(a.followDate||''))[0];
     const amt=signedAmount(c);
     const hasContracts=c.contracts&&c.contracts.length>0;
     /* v17-fix: 客户列表中合同分类型展示：预付款包房显示回款，代运营/加盟显示收款 */
@@ -1008,10 +1018,10 @@ function renderCustList(list){
     }
     return `<div class="cust-item" onclick="go('customerDetail',{id:'${c.id}'})">
       <div class="cust-info"><div class="cn">${esc(c.name)}</div>
-      <div class="cm"><span class="pill" style="background:${BIZ_COLORS[c.businessLine]}22;color:${BIZ_COLORS[c.businessLine]}">${c.businessLine}</span>${lastF?` · ${lastF.followDate}跟进`:''}</div>
+      <div class="cm"><span class="pill" style="background:${bizColor(c.businessLine)}22;color:${bizColor(c.businessLine)}">${bizLabel(c.businessLine)}</span>${lastF?` · ${lastF.followDate}跟进`:''}</div>
       ${c.fundUsage?`<div class="cm"><span class="xs t3">资金用途：</span><span class="xs t2">${esc(c.fundUsage)}</span></div>`:''}
       </div>
-      <div class="cust-meta"><span class="status ${STATUS[c.status].cls}">${STATUS[c.status].label}</span>
+      <div class="cust-meta"><span class="status ${STATUS[c.status||'new'].cls}">${STATUS[c.status||'new'].label}</span>
       ${hasContracts?contractHtml:`<div class="amount ${amt?'':'muted'}" style="margin-top:5px">${amt?amt+'万':'-'}</div>`}
       </div>
     </div>`;
@@ -1164,7 +1174,7 @@ function filterCustomers(v,type){
 function CustomerDetailView(){
   const c=DB.get('customers',[]).find(x=>x.id===state.params.id);
   if(!c)return`<div class="content"><div class="empty">客户不存在</div></div>`;
-  const fs=DB.get('followups',[]).filter(f=>f.customerId===c.id).sort((a,b)=>b.followDate.localeCompare(a.followDate));
+  const fs=DB.get('followups',[]).filter(f=>f.customerId===c.id).sort((a,b)=>(b.followDate||'').localeCompare(a.followDate||''));
   const amt=signedAmount(c);const types=contractTypes(c);
   let html=`<div class="header"><div class="h-left"><button class="back" onclick="go('customers')">‹</button><h1>客户详情</h1></div>
     <div class="h-right"><button class="back" onclick="go('customerForm',{mode:'edit',id:'${c.id}'})" style="font-size:14px;color:var(--primary)">编辑</button></div></div>`;
@@ -1172,9 +1182,9 @@ function CustomerDetailView(){
     <div class="card">
       <div class="flex between center">
         <div style="font-size:20px;font-weight:700">${esc(c.name)}</div>
-        <span class="status ${STATUS[c.status].cls}">${STATUS[c.status].label}</span>
+        <span class="status ${STATUS[c.status||'new'].cls}">${STATUS[c.status||'new'].label}</span>
       </div>
-      <div class="sm t2" style="margin-top:6px"><span class="pill" style="background:${BIZ_COLORS[c.businessLine]}22;color:${BIZ_COLORS[c.businessLine]}">${c.businessLine}</span> · 跟进销售 ${c.salesName}</div>
+      <div class="sm t2" style="margin-top:6px"><span class="pill" style="background:${bizColor(c.businessLine)}22;color:${bizColor(c.businessLine)}">${bizLabel(c.businessLine)}</span> · 跟进销售 ${c.salesName||'未分配'}</div>
       <div class="divider"></div>
       <div class="form-row" style="gap:16px">
         <div><div class="xs t3">联系人</div><div class="bold" style="margin-top:2px">${esc(c.contactName)||'-'}</div></div>
@@ -1246,8 +1256,8 @@ function CustomerDetailView(){
     <div class="card">`;
   if(fs.length===0)html+=`<div class="empty" style="padding:24px"><div class="em-ico">📝</div><p>暂无跟进记录</p></div>`;
   else{html+=`<div class="timeline">`;
-  fs.forEach(f=>{const ts=(f.createdAt||'').split(' ');html+=`<div class="tl-item"><div class="tl-date">${f.followDate} ${ts[1]||''} · ${f.salesName}</div>
-    ${f.statusChange?`<div class="tl-status"><span class="status ${STATUS[f.statusChange].cls}">${STATUS[f.statusChange].label}</span></div>`:''}
+  fs.forEach(f=>{const ts=(f.createdAt||'').split(' ');html+=`<div class="tl-item"><div class="tl-date">${f.followDate} ${ts[1]||''} · ${f.salesName||'未知'}</div>
+    ${f.statusChange?`<div class="tl-status"><span class="status ${STATUS[f.statusChange]?.cls||'s-new'}">${STATUS[f.statusChange]?.label||'跟进'}</span></div>`:''}
     <div class="tl-content">${esc(f.content)}</div>
     ${f.nextAction?`<div class="tl-next">📌 下一步：${esc(f.nextAction)}</div>`:''}</div>`});
   html+=`</div>`}
@@ -1455,7 +1465,8 @@ function saveCustomer(id){
   }else{
     let salesId=state.user.id,salesName=state.user.name;
     let reassigned=false;
-    if(state.user.role==='sales'&&state.user.businessLine!==biz){
+    /* v31: 管理员新建客户时自动分配给对应业务线销售 */
+    if(state.user.role==='admin'||(state.user.role==='sales'&&state.user.businessLine!==biz)){
       const target=allSales().find(s=>s.businessLine===biz);
       if(target){salesId=target.id;salesName=target.name;reassigned=true}
     }
@@ -1491,7 +1502,7 @@ function FollowupFormView(){
   html+=`<div class="content"><div class="container">
     <div class="card">
       <div class="form-group"><label>客户 <span class="req">*</span></label>
-        <select id="fu-cust"><option value="">请选择客户</option>${customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${c.name}（${c.businessLine}）</option>`).join('')}</select>
+        <select id="fu-cust"><option value="">请选择客户</option>${customers.map(c=>`<option value="${c.id}" ${cid===c.id?'selected':''}>${c.name}（${bizLabel(c.businessLine)}）</option>`).join('')}</select>
       </div>
       <div class="form-group"><label>跟进日期 <span class="req">*</span></label><input id="fu-date" type="date" value="${todayStr()}"></div>
       <div class="form-group"><label>客户状态变化</label>
@@ -1515,7 +1526,7 @@ function saveFollowup(){
   const c=DB.get('customers',[]).find(x=>x.id===custId);
   if(!c){toast('客户不存在');return}
   const st=$('#fu-status').value;
-  const f={id:uid(),customerId:custId,customerName:c.name,salesId:c.salesId,salesName:c.salesName,businessLine:c.businessLine,
+  const f={id:uid(),customerId:custId,customerName:c.name,salesId:c.salesId||state.user.id,salesName:c.salesName||state.user.name,businessLine:c.businessLine||'未分配',
     followDate:$('#fu-date').value,content,statusChange:st||'',nextAction:$('#fu-next').value.trim(),
     createdAt:todayStr()+' '+new Date().toTimeString().slice(0,5)};
   // 先更新本地缓存
@@ -1619,8 +1630,8 @@ function ReportsView(){
     const sTag=isAdmin?`<span class="pill">${r.salesName}</span>`:'';
     html+=`<div class="card card-tap" onclick="go('reportDetail',{id:'${r.id}'})">
       <div class="card-row">
-        <div><div class="card-title">${r.businessLine} · 日报 ${sTag}</div>
-        <div class="card-sub">${r.date} · 新增${r.todayNewCount||0} · 历史${r.todayHistoryCount||0} · 有效${r.todayValidCount} · 签约${r.signedCustomers?.length||0}家</div></div>
+        <div><div class="card-title">${r.businessLine||'未分配'} · 日报 ${sTag}</div>
+        <div class="card-sub">${r.date} · 新增${r.todayNewCount||0} · 历史${r.todayHistoryCount||0} · 有效${r.todayValidCount||0} · 签约${r.signedCustomers?.length||0}家</div></div>
         <div style="color:var(--primary);font-size:20px">›</div>
       </div>
     </div>`;
@@ -1827,10 +1838,10 @@ function ReportDetailView(){
   }else html+=`<div class="rp-cust t3">暂无</div>`;
   html+=`</div>`;
 
-  const otherFs=fs.filter(f=>f.businessLine!==bizLabel);
+  const otherFs=fs.filter(f=>(f.businessLine||'未分配')!==bizLabel);
   if(otherFs.length){
-    const otherBizs=[...new Set(otherFs.map(f=>f.businessLine))];
-    otherBizs.forEach(ob=>{html+=`<div class="rp-sec"><h4>${ob}</h4>`;const ofs=otherFs.filter(f=>f.businessLine===ob);
+    const otherBizs=[...new Set(otherFs.map(f=>f.businessLine||'未分配'))];
+    otherBizs.forEach(ob=>{html+=`<div class="rp-sec"><h4>${ob}</h4>`;const ofs=otherFs.filter(f=>(f.businessLine||'未分配')===ob);
       html+=`<div class="rp-num">今日跟进：${ofs.length}</div>`;
       ofs.forEach(f=>{const oc=salesCs.find(c=>c.id===f.customerId);html+=`<div class="rp-cust"><div class="rc-name"><span class="rc-name-main">${f.customerName}</span><span class="rc-name-meta">${custBizTag(oc)}</span></div><div class="rc-desc">${esc(f.content)}</div></div>`});
       html+=`</div>`});
@@ -1980,7 +1991,7 @@ function WeeklyReportView(){
     /* v4: 主签约类型 */
     const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
     html+=`<div class="card">
-      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span></div>
       <div class="divider"></div>
       <div class="kpi-grid" style="margin-bottom:0">
         <div class="kpi"><div class="k-num">${sf.length}</div><div class="k-lbl">本周跟进</div></div>
@@ -2118,7 +2129,7 @@ function MonthlyReportView(){
     html+=`</tbody></table></div>`;
   }
   sales.forEach(s=>{
-    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id&&f.followDate.startsWith(m));
+    const sf=DB.get('followups',[]).filter(f=>f.salesId===s.id&&(f.followDate||'').startsWith(m));
     const cs=allCs.filter(c=>c.salesId===s.id);
     const valid=sf.filter(f=>f.statusChange==='valid').length;
     const intent=cs.filter(c=>c.status==='intent').length;
@@ -2133,7 +2144,7 @@ function MonthlyReportView(){
     /* v4: 主签约类型 */
     const mainType=BIZ_MAIN_TYPE[s.businessLine]||'';
     html+=`<div class="card">
-      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="card-row"><div class="card-title">${s.name}</div><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span></div>
       <div class="divider"></div>
       <div class="kpi-grid" style="margin-bottom:0">
         <div class="kpi"><div class="k-num">${sf.length}</div><div class="k-lbl">本月跟进</div></div>
@@ -2239,8 +2250,8 @@ async function exportReportImage(reportId,type){
       },'image/png',0.95);
     }
   }catch(e){toast('生成失败：'+e.message)}
-  /* 还原 textarea */
-  saved.forEach(s=>{s.parent.replaceChild(s.el,s.el.parentNode.querySelector('.next-plan-text')||s.el)});
+  /* v31: 还原 textarea，修复 null.parentNode 崩溃 */
+  saved.forEach(s=>{try{s.parent.replaceChild(s.el,s.parent.querySelector('.next-plan-text')||s.el)}catch(e){}});
   savedBtns.forEach(s=>{s.el.style.display=''});
 }
 
@@ -2411,13 +2422,14 @@ function AdminView(){
     ${range.type==='custom'?`<div class="dash-custom"><input type="date" value="${range.start}" onchange="setDashCustom('dashStart',this.value)"><span>~</span><input type="date" value="${range.end}" onchange="setDashCustom('dashEnd',this.value)"></div>`:''}
   </div>`;
   const mStats=contractStatsInRange(cs,range.start,range.end);
-  /* v5: 按筛选区间统计 */
-  const rangeNewCustomers=cs.filter(c=>(c.createdAt||'')>=range.start&&(c.createdAt||'')<=range.end);
-  const rangeFs=fs.filter(f=>(f.followDate||'')>=range.start&&(f.followDate||'')<=range.end);
-  const rangeHistoryFs=rangeFs.filter(f=>{
+  /* v31: 修复空自定义日期范围时统计逻辑错误 */
+  const rs=range.start||'',re=range.end||'';
+  const rangeNewCustomers=rs&&re?cs.filter(c=>(c.createdAt||'')>=rs&&(c.createdAt||'')<=re):[];
+  const rangeFs=rs&&re?fs.filter(f=>(f.followDate||'')>=rs&&(f.followDate||'')<=re):[];
+  const rangeHistoryFs=rs&&re?rangeFs.filter(f=>{
     const cust=cs.find(c=>c.id===f.customerId);
-    return cust&&(cust.createdAt||'')<range.start;
-  });
+    return cust&&(cust.createdAt||'')<rs;
+  }):[];
   const totalTarget=allSales().reduce((s,sl)=>s+(sl.monthlyTarget||0),0);
   const isMonthView=range.type==='month';
   html+=`<div class="stat-grid">
@@ -2449,7 +2461,7 @@ function AdminView(){
         <div style="width:36px;text-align:center;font-size:18px;font-weight:700">${medal}</div>
         <div style="flex:1">
           <div style="font-weight:600">${r.s.name} ${protectionBadge(r.s.hireDate)}</div>
-          <div class="xs t3" style="margin-top:2px"><span class="biz-tag" style="background:${BIZ_COLORS[r.s.businessLine]}22;color:${BIZ_COLORS[r.s.businessLine]}">${r.s.businessLine}</span> · ${r.custCount}客户 · ${r.signedCount}签约</div>
+          <div class="xs t3" style="margin-top:2px"><span class="biz-tag" style="background:${bizColor(r.s.businessLine)}22;color:${bizColor(r.s.businessLine)}">${bizLabel(r.s.businessLine)}</span> · ${r.custCount}客户 · ${r.signedCount}签约</div>
         </div>
         <div style="text-align:right">
           <div style="font-size:16px;font-weight:700;color:var(--primary)">${r.ms.total}万</div>
@@ -2473,7 +2485,7 @@ function AdminView(){
     /* v4: 保护期 badge */
     const inProtection=isInProtection(s.hireDate);
     html+=`<div class="perf-card">
-      <div class="pc-head"><div class="pc-name">${s.name} ${protectionBadge(s.hireDate)}</div><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span></div>
+      <div class="pc-head"><div class="pc-name">${s.name} ${protectionBadge(s.hireDate)}</div><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span></div>
       <div class="flex between sm"><span class="t2">已签约 ${ms.count} 家 · ${ms.total}万</span>${isMonthView?`<span class="bold" style="color:${pct>=100?'var(--success)':'var(--warn)'}">${pct}%</span>`:''}</div>
       ${isMonthView?`<div class="pc-target-bar"><span style="width:${Math.min(pct,100)}%;background:${pct>=100?'var(--success)':'var(--primary)'}"></span></div>
       <div class="sm t3">月目标 ${tgt}万 · 完成 ${ms.total}万</div>`:`<div class="sm t3">${range.label}签约 ${ms.total}万 · ${ms.count} 单</div>`}
@@ -2529,7 +2541,7 @@ function TeamView(){
     html+=`<div class="card">
       <div class="card-row">
         <div class="avatar" style="background:${avColor(s.name)};width:44px;height:44px">${s.name[0]}</div>
-        <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> · ${s.username}${s.hireDate?` · 入职 ${days} 天`:''}</div></div>
+        <div style="flex:1"><div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div><div class="card-sub"><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span> · ${s.username}${s.hireDate?` · 入职 ${days} 天`:''}</div></div>
         <button class="back" onclick="go('userForm',{mode:'edit',id:'${s.id}'})" style="font-size:13px;color:var(--primary)">编辑</button>
       </div>
       <div class="divider"></div>
@@ -2665,7 +2677,7 @@ function HireAnalysisView(){
         <div class="avatar" style="background:${avColor(s.name)};width:44px;height:44px">${s.name[0]}</div>
         <div style="flex:1">
           <div class="card-title">${s.name} ${protectionBadge(s.hireDate)}</div>
-          <div class="card-sub"><span class="biz-tag" style="background:${BIZ_COLORS[s.businessLine]}22;color:${BIZ_COLORS[s.businessLine]}">${s.businessLine}</span> · ${s.username}</div>
+          <div class="card-sub"><span class="biz-tag" style="background:${bizColor(s.businessLine)}22;color:${bizColor(s.businessLine)}">${bizLabel(s.businessLine)}</span> · ${s.username}</div>
         </div>
         <button class="back" onclick="go('userForm',{mode:'edit',id:'${s.id}'})" style="font-size:13px;color:var(--primary)">编辑</button>
       </div>
@@ -2822,7 +2834,7 @@ function exportCustomersCSV(){
 function exportFollowupsCSV(){
   const fs=DB.get('followups',[]);const cs=DB.get('customers',[]);
   const header=['跟进日期','客户名称','业务线','销售','跟进内容','状态变更','下一步行动','创建时间'];
-  const rows=fs.map(f=>{const c=cs.find(x=>x.id===f.customerId);return [f.followDate,f.customerName||c?.name||'',f.businessLine,f.salesName,f.content||'',f.statusChange||'',f.nextAction||'',f.createdAt||'']});
+  const rows=fs.map(f=>{const c=cs.find(x=>x.id===f.customerId);return [f.followDate||'',f.customerName||c?.name||'',f.businessLine||'未分配',f.salesName||'未知',f.content||'',f.statusChange||'',f.nextAction||'',f.createdAt||'']});
   const csv='\ufeff'+[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
   downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'跟进记录_'+todayStr()+'.csv');
   document.getElementById('export-menu')?.remove();toast(`已导出 ${fs.length} 条跟进`);
@@ -2830,7 +2842,7 @@ function exportFollowupsCSV(){
 function exportReportsCSV(){
   const rs=DB.get('reports',[]);
   const header=['日期','销售','业务线','今日新增','今日有效','本周有效','本周意向','意向金额(万)','签约客户数','签约总额(万)','问题','需协助','摘要'];
-  const rows=rs.map(r=>{const signedAmt=(r.signedCustomers||[]).reduce((s,sc)=>s+(sc.amount||0),0);return [r.date,r.salesName,r.businessLine,r.todayNewCount,r.todayValidCount,r.weekValidCount,r.weekIntentCount,r.weekIntentAmount,(r.signedCustomers||[]).length,signedAmt,r.problems||'',r.needHelp||'',r.summary||'']});
+  const rows=rs.map(r=>{const signedAmt=(r.signedCustomers||[]).reduce((s,sc)=>s+(Number(sc.amount)||0),0);return [r.date,r.salesName||'未知',r.businessLine||'未分配',r.todayNewCount||0,r.todayValidCount||0,r.weekValidCount||0,r.weekIntentCount||0,r.weekIntentAmount||0,(r.signedCustomers||[]).length,signedAmt,r.problems||'',r.needHelp||'',r.summary||'']});
   const csv='\ufeff'+[header,...rows].map(r=>r.map(csvEscape).join(',')).join('\n');
   downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'销售报告_'+todayStr()+'.csv');
   document.getElementById('export-menu')?.remove();toast(`已导出 ${rs.length} 份报告`);
