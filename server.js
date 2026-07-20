@@ -37,7 +37,7 @@ function writeDB(data) {
 /* ---- GitHub Backup (防 Render 部署后数据丢失) ---- */
 const GH_TOKEN = process.env.GH_BACKUP_TOKEN || '';
 const GH_REPO = process.env.GH_BACKUP_REPO || 'luory-ai/jwpz-crm';
-const GH_BRANCH = process.env.GH_BACKUP_BRANCH || 'main';
+const GH_BRANCH = process.env.GH_BACKUP_BRANCH || 'master';
 const GH_FILE = 'backup/db.json';  /* GitHub 上的备份路径 */
 let _backupSHA = '';  /* 缓存文件 SHA，避免每次查询 */
 let _backupTimer = null;
