@@ -408,8 +408,8 @@ function custBizTag(c){
 const GUN_PEERS = [
   // 本地中继（本机调试）
   `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/gun`,
-  // Render 公网中继（双备份主）
-  'wss://jwpz-crm-1.onrender.com/gun',
+  // Render 公网中继（主备份）
+  'wss://jwpz-crm-2.onrender.com/gun',
   // 公共备用中继
   'wss://relay.peer.ooo/gun',
   'https://gun-manhattan.herokuapp.com/gun'
@@ -719,15 +719,23 @@ const USER_BACKUP_KEY = 'jwpz_crm_user_backup';
 
 /* 登录：从 usersNode 拉取最新用户列表，验证 username/password */
 async function doLoginApi(u, p) {
-  const users = await new Promise(resolve => {
-    const map = {};
-    usersNode.map().once((data, id) => {
-      if (data) { map[id] = fromGun(data); }
+  toast('正在连接服务器，请稍候...');
+  let users = [];
+  // 最多尝试 3 次，每次等待更长（应对 Render 冷启动）
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    users = await new Promise(resolve => {
+      const map = {};
+      const timeout = attempt === 1 ? 3000 : attempt === 2 ? 8000 : 15000;
+      usersNode.map().once((data, id) => {
+        if (data) { map[id] = fromGun(data); }
+      });
+      setTimeout(() => resolve(Object.values(map)), timeout);
     });
-    setTimeout(() => resolve(Object.values(map)), 3000);
-  });
+    if (users.length > 0) break;
+    if (attempt < 3) toast(`第${attempt}次尝试未获取到数据，重试中...`);
+  }
   const user = users.find(x => x.username === u && x.password === p);
-  if (!user) { toast('用户名或密码错误'); return; }
+  if (!user) { toast('用户名或密码错误（或服务器连接超时，请稍后重试）'); return; }
   state.user = user;
   state.token = 'gun-auth-' + user.id;
   localStorage.setItem(USER_BACKUP_KEY, JSON.stringify(user));
