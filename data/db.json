@@ -52,6 +52,8 @@
       "contactName": "王总",
       "contactPhone": "-",
       "businessLine": "预付款包房",
+      "businessLines": ["预付款包房"],
+      "lineData": { "预付款包房": { "fundUsage": "预付款（房租缴纳）" } },
       "status": "valid",
       "salesId": "u_lijun",
       "salesName": "李俊",
@@ -69,6 +71,8 @@
       "contactName": "负责人",
       "contactPhone": "-",
       "businessLine": "预付款包房",
+      "businessLines": ["预付款包房"],
+      "lineData": { "预付款包房": { "fundUsage": "预付款（房产税+经营周转）" } },
       "status": "valid",
       "salesId": "u_lijun",
       "salesName": "李俊",
@@ -86,6 +90,11 @@
       "contactName": "老板",
       "contactPhone": "-",
       "businessLine": "预付款包房",
+      "businessLines": ["预付款包房", "代运营"],
+      "lineData": {
+        "预付款包房": { "fundUsage": "预付款（酒店经营）" },
+        "代运营": { "customerStatus": "线上运营不佳，需要代运营提升收益" }
+      },
       "status": "signed",
       "salesId": "u_lijun",
       "salesName": "李俊",
@@ -116,6 +125,8 @@
       "contactName": "老板",
       "contactPhone": "-",
       "businessLine": "预付款包房",
+      "businessLines": ["预付款包房"],
+      "lineData": { "预付款包房": { "fundUsage": "预付款（经营周转）" } },
       "status": "signed",
       "salesId": "u_lijun",
       "salesName": "李俊",
@@ -140,13 +151,18 @@
       "contactName": "老板",
       "contactPhone": "-",
       "businessLine": "智能体平台",
+      "businessLines": ["智能体平台", "代运营"],
+      "lineData": {
+        "智能体平台": { "customerStatus": "酒店智能化升级需求，需要AI智能体平台服务" },
+        "代运营": { "customerStatus": "线上运营不佳，有代运营需求" }
+      },
       "status": "valid",
       "salesId": "u_youjun",
       "salesName": "有俊",
       "remark": "初步沟通拿到方案，和老板在沟通。代运营需求。",
       "intendedAmount": 0,
       "contracts": [],
-      "fundUsage": "代运营服务费",
+      "customerStatus": "酒店智能化升级需求，需要AI智能体平台服务",
       "docsCompletedDate": "",
       "createdAt": "2026-07-14",
       "updatedAt": "2026-07-17"
@@ -157,6 +173,8 @@
       "contactName": "李总",
       "contactPhone": "-",
       "businessLine": "预付款包房",
+      "businessLines": ["预付款包房"],
+      "lineData": { "预付款包房": { "fundUsage": "预付款（装修周转）" } },
       "status": "intent",
       "salesId": "u_lijun",
       "salesName": "李俊",
@@ -272,5 +290,5 @@
     }
   ],
   "nextPlans": {},
-  "seed_ver": "v7"
+  "seed_ver": "v8"
 }
