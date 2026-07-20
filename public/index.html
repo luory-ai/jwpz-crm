@@ -2126,7 +2126,7 @@ function AdminView(){
     <div class="stat purple"><div class="num">${rangeHistoryFs.length}</div><div class="lbl">${range.prefix}跟进历史客户</div></div>
     <div class="stat green"><div class="num">${mStats.total}万</div><div class="lbl">${range.label}签约额</div><div class="sub">${isMonthView?`目标${totalTarget}万 · ${totalTarget>0?Math.round(mStats.total/totalTarget*100):0}%`:`${mStats.count} 单`}</div></div>
     <div class="stat orange"><div class="num">${mStats.collectionTotal}万</div><div class="lbl">应回款总额</div><div class="sub">${mStats.collectionTotal>mStats.total?'预付款包房折扣回款':'无折扣回款'}</div></div>
-  </div>
+  </div>`;
 
   /* v19: 销售业绩排行榜 */
   const ranking=allSales().map(s=>{
