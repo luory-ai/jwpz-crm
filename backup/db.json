@@ -1,0 +1,375 @@
+{
+  "users": [
+    {
+      "id": "u_admin",
+      "username": "admin",
+      "password": "LUOYU66728",
+      "name": "管理员",
+      "role": "admin",
+      "businessLine": "",
+      "phone": "",
+      "monthlyTarget": 0,
+      "hireDate": ""
+    },
+    {
+      "id": "id_1784531822206w3t0x",
+      "name": "李俊",
+      "username": "lijun",
+      "password": "123456",
+      "businessLine": "预付款包房",
+      "phone": "19522665113",
+      "monthlyTarget": 100,
+      "hireDate": "2026-05-06",
+      "role": "sales"
+    },
+    {
+      "id": "id_178453189078527zp4",
+      "name": "张程华",
+      "username": "zhangchenghua",
+      "password": "123456",
+      "businessLine": "品牌加盟",
+      "phone": "13909287879",
+      "monthlyTarget": 0,
+      "hireDate": "2026-05-06",
+      "role": "sales"
+    },
+    {
+      "id": "id_1784531934226gezns",
+      "name": "宋丽君",
+      "username": "songlijun",
+      "password": "123456",
+      "businessLine": "预付款包房",
+      "phone": "15273132644",
+      "monthlyTarget": 100,
+      "hireDate": "2026-04-17",
+      "role": "sales"
+    },
+    {
+      "id": "id_1784531982084bwil2",
+      "name": "廖尾增",
+      "username": "liaoweizeng",
+      "password": "123456",
+      "businessLine": "预付款包房",
+      "phone": "15396225187",
+      "monthlyTarget": 25,
+      "hireDate": "2026-07-06",
+      "role": "sales"
+    },
+    {
+      "id": "id_1784532019585cpq7y",
+      "name": "杨栖桐",
+      "username": "yangxitong",
+      "password": "123456",
+      "businessLine": "预付款包房",
+      "phone": "18670706506",
+      "monthlyTarget": 100,
+      "hireDate": "2026-04-17",
+      "role": "sales"
+    },
+    {
+      "id": "id_1784532093334d64i0",
+      "name": "罗巧",
+      "username": "luoqiao",
+      "password": "123456",
+      "businessLine": "智能体平台",
+      "phone": "17267686868",
+      "monthlyTarget": 50,
+      "hireDate": "2026-06-15",
+      "role": "sales"
+    },
+    {
+      "id": "id_1784532134806j5s7h",
+      "name": "徐建",
+      "username": "xujian",
+      "password": "123456",
+      "businessLine": "品牌加盟",
+      "phone": "13608346050",
+      "monthlyTarget": 0,
+      "hireDate": "2026-04-17",
+      "role": "sales"
+    },
+    {
+      "id": "id_17845321669188xb4t",
+      "name": "丁哲",
+      "username": "dingzhe",
+      "password": "123456",
+      "businessLine": "品牌加盟",
+      "phone": "13551203493",
+      "monthlyTarget": 0,
+      "hireDate": "2026-04-17",
+      "role": "sales"
+    }
+  ],
+  "customers": [
+    {
+      "id": "c1",
+      "name": "东莞嘉映玥酒店",
+      "contactName": "王总",
+      "contactPhone": "-",
+      "businessLine": "预付款包房",
+      "status": "valid",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "�",
+      "remark": "从侧面了解到酒店欠了房租，具体还在沟通看差多久的房租。差房租缴纳证明。",
+      "intendedAmount": 0,
+      "contracts": [],
+      "fundUsage": "预付款（房租缴纳）",
+      "docsCompletedDate": "",
+      "createdAt": "2026-07-15",
+      "updatedAt": "2026-07-20"
+    },
+    {
+      "id": "c2",
+      "name": "米兰特酒店",
+      "contactName": "负责人",
+      "contactPhone": "-",
+      "businessLine": "预付款包房",
+      "status": "valid",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "�",
+      "remark": "和负责人沟通预付款事项，想要20万。老板欠了房产税没有交，还需了解酒店经营情况。",
+      "intendedAmount": 20,
+      "contracts": [],
+      "fundUsage": "预付款（房产税+经营周转）",
+      "docsCompletedDate": "",
+      "createdAt": "2026-07-16",
+      "updatedAt": "2026-07-20"
+    },
+    {
+      "id": "c3",
+      "name": "武汉城市精品酒店",
+      "contactName": "老板",
+      "contactPhone": "-",
+      "businessLine": "预付款包房",
+      "status": "signed",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "�",
+      "remark": "已打款30万。同时已启动代运营服务（7月13日）。",
+      "intendedAmount": 0,
+      "contracts": [
+        {
+          "type": "预付款包房",
+          "amount": 30,
+          "discount": 0.9,
+          "date": "2026-07-13"
+        },
+        {
+          "type": "代运营",
+          "amount": 4.2,
+          "discount": 1,
+          "date": "2026-07-13"
+        }
+      ],
+      "fundUsage": "预付款（酒店经营）",
+      "docsCompletedDate": "2026-07-10",
+      "createdAt": "2026-07-05",
+      "updatedAt": "2026-07-20"
+    },
+    {
+      "id": "c4",
+      "name": "城市快捷酒店",
+      "contactName": "老板",
+      "contactPhone": "-",
+      "businessLine": "预付款包房",
+      "status": "signed",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "�",
+      "remark": "已打款20万。",
+      "intendedAmount": 0,
+      "contracts": [
+        {
+          "type": "预付款包房",
+          "amount": 20,
+          "discount": 0.85,
+          "date": "2026-07-13"
+        }
+      ],
+      "fundUsage": "预付款（经营周转）",
+      "docsCompletedDate": "2026-07-08",
+      "createdAt": "2026-07-08",
+      "updatedAt": "2026-07-20"
+    },
+    {
+      "id": "c5",
+      "name": "章丘城市快捷酒店",
+      "contactName": "老板",
+      "contactPhone": "-",
+      "businessLine": "智能体平台",
+      "status": "valid",
+      "salesId": "u_youjun",
+      "salesName": "有俊",
+      "remark": "初步沟通拿到方案，和老板在沟通。代运营需求。",
+      "intendedAmount": 0,
+      "contracts": [],
+      "fundUsage": "代运营服务费",
+      "docsCompletedDate": "",
+      "createdAt": "2026-07-14",
+      "updatedAt": "2026-07-17"
+    },
+    {
+      "id": "c6",
+      "name": "某意向酒店A",
+      "contactName": "李总",
+      "contactPhone": "-",
+      "businessLine": "预付款包房",
+      "status": "intent",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "�",
+      "remark": "30日内有望成交，意向18万。",
+      "intendedAmount": 18,
+      "contracts": [],
+      "fundUsage": "预付款（装修周转）",
+      "docsCompletedDate": "",
+      "createdAt": "2026-07-10",
+      "updatedAt": "2026-07-20"
+    },
+    {
+      "id": "id_1784532509135y2s5t",
+      "name": "11",
+      "contactName": "11",
+      "contactPhone": "11",
+      "businessLine": "预付款包房",
+      "status": "new",
+      "remark": "",
+      "intendedAmount": 0,
+      "contracts": [],
+      "fundUsage": "",
+      "docsCompletedDate": "",
+      "roomCount": 0,
+      "ctripDiamond": "未评级",
+      "openDate": "",
+      "ctripMonthlyRevenue": 0,
+      "meituanMonthlyRevenue": 0,
+      "fliggyMonthlyRevenue": 0,
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "李俊",
+      "createdAt": "2026-07-20",
+      "updatedAt": "2026-07-20"
+    }
+  ],
+  "followups": [
+    {
+      "id": "f1",
+      "customerId": "c1",
+      "customerName": "东莞嘉映玥酒店",
+      "salesId": "u_lijun",
+      "salesName": "李俊",
+      "businessLine": "预付款包房",
+      "followDate": "2026-07-17",
+      "content": "差房租缴纳证明，从侧面了解到酒店欠了房租。",
+      "statusChange": "valid",
+      "nextAction": "跟进房租拖欠时长",
+      "createdAt": "2026-07-17 18:30"
+    },
+    {
+      "id": "f2",
+      "customerId": "c2",
+      "customerName": "米兰特酒店",
+      "salesId": "u_lijun",
+      "salesName": "李俊",
+      "businessLine": "预付款包房",
+      "followDate": "2026-07-17",
+      "content": "拜访米兰特酒店，和负责人沟通预付款事项。",
+      "statusChange": "valid",
+      "nextAction": "了解酒店经营情况",
+      "createdAt": "2026-07-17 17:00"
+    },
+    {
+      "id": "f3",
+      "customerId": "c5",
+      "customerName": "章丘城市快捷酒店",
+      "salesId": "u_youjun",
+      "salesName": "有俊",
+      "businessLine": "智能体平台",
+      "followDate": "2026-07-16",
+      "content": "初步沟通拿到方案。",
+      "statusChange": "valid",
+      "nextAction": "等老板反馈",
+      "createdAt": "2026-07-16 16:00"
+    }
+  ],
+  "reports": [
+    {
+      "id": "r1",
+      "salesId": "u_lijun",
+      "salesName": "李俊",
+      "date": "2026-07-17",
+      "businessLine": "预付款包房",
+      "todayNewCount": 0,
+      "todayHistoryCount": 2,
+      "todayValidCount": 1,
+      "weekValidCount": 2,
+      "weekIntentCount": 1,
+      "weekIntentAmount": 38,
+      "weekReview": "",
+      "signedCustomers": [
+        {
+          "name": "武汉城市精品酒店",
+          "amount": 35,
+          "discount": 0.9,
+          "types": [
+            "预付款包房",
+            "代运营"
+          ]
+        },
+        {
+          "name": "城市快捷酒店",
+          "amount": 20,
+          "discount": 0.85,
+          "types": [
+            "预付款包房"
+          ]
+        }
+      ],
+      "problems": "暂无",
+      "needHelp": "暂无",
+      "summary": "本周签约2家共55万；2家有效客户推进中。",
+      "createdAt": "2026-07-17 19:00",
+      "updatedAt": "2026-07-17 19:00"
+    },
+    {
+      "id": "id_1784477610593mivn5",
+      "salesId": "u_lijun",
+      "salesName": "李俊",
+      "date": "2026-07-20",
+      "businessLine": "预付款包房",
+      "todayNewCount": 0,
+      "todayHistoryCount": 0,
+      "todayValidCount": 0,
+      "weekValidCount": 0,
+      "weekIntentCount": 0,
+      "weekIntentAmount": 0,
+      "weekReview": "",
+      "followups": [],
+      "signedCustomers": [],
+      "problems": "暂无1",
+      "needHelp": "暂无1",
+      "summary": "继续加油",
+      "createdAt": "2026-07-20 00:13",
+      "updatedAt": "2026-07-20 00:14"
+    },
+    {
+      "id": "id_178453262276020vdd",
+      "salesId": "id_1784531822206w3t0x",
+      "salesName": "李俊",
+      "date": "2026-07-20",
+      "businessLine": "预付款包房",
+      "todayNewCount": 1,
+      "todayHistoryCount": 0,
+      "todayValidCount": 0,
+      "weekValidCount": 0,
+      "weekIntentCount": 0,
+      "weekIntentAmount": 0,
+      "weekReview": "",
+      "followups": [],
+      "signedCustomers": [],
+      "problems": "暂无",
+      "needHelp": "暂无",
+      "summary": "",
+      "createdAt": "2026-07-20 15:30",
+      "updatedAt": "2026-07-20 15:30"
+    }
+  ],
+  "nextPlans": {},
+  "seed_ver": "v7"
+}
