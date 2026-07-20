@@ -1,0 +1,19 @@
+{
+  "name": "jwpz-crm-gun",
+  "version": "2.0.0",
+  "description": "久窝朋赞 销售 CRM 系统 — Gun.js 对等同步版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "import": "node migrate.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "gun": "^0.2020.1239"
+  }
+}

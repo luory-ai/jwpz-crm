@@ -1,0 +1,8 @@
+node_modules/
+radata/
+data/gun-data.json/
+data/gun-data.json
+*.log
+.DS_Store
+.env
+test-*.js

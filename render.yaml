@@ -1,0 +1,27 @@
+# Render 部署配置 — Gun.js 对等同步 CRM
+# 使用方法：在 Render 控制台选择 "New → Blueprint" 并连接 GitHub 仓库
+services:
+  - type: web
+    name: jwpz-crm-gun
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Gun 中继：连接公共备用中继，确保跨网络数据可达性
+      - key: GUN_RELAY_1
+        value: https://relay.peer.ooo/gun
+      - key: GUN_RELAY_2
+        value: https://gun-manhattan.herokuapp.com/gun
+    # 数据持久化说明：
+    # 免费套餐(free)无持久磁盘，重启后 radisk 数据会清空
+    # 但 Gun 对等架构下，任何在线客户端会自动将数据同步回中继
+    # 如需磁盘持久化，升级到 Starter 套餐($7/月)并添加持久磁盘：
+    # disk:
+    #   name: gun-data
+    #   mountPath: /opt/render/project/src/data
+    #   sizeGB: 1
