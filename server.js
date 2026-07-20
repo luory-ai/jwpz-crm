@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 const cors = require('cors');
 const crypto = require('crypto');
 
@@ -23,14 +24,99 @@ function uid() { return 'id_' + Date.now() + Math.random().toString(36).slice(2,
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = seedData();
-    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
+    fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf8');
     return initial;
   }
   try { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
-  catch (e) { const initial = seedData(); fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2)); return initial; }
+  catch (e) { const initial = seedData(); fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2), 'utf8'); return initial; }
 }
 function writeDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
+
+/* ---- GitHub Backup (防 Render 部署后数据丢失) ---- */
+const GH_TOKEN = process.env.GH_BACKUP_TOKEN || '';
+const GH_REPO = process.env.GH_BACKUP_REPO || 'luory-ai/jwpz-crm';
+const GH_BRANCH = process.env.GH_BACKUP_BRANCH || 'main';
+const GH_FILE = 'backup/db.json';  /* GitHub 上的备份路径 */
+let _backupSHA = '';  /* 缓存文件 SHA，避免每次查询 */
+let _backupTimer = null;
+let _backupDirty = false;  /* 数据有变更需要备份 */
+
+/* GitHub API 请求辅助 */
+function ghRequest(method, apiPath, body) {
+  return new Promise((resolve, reject) => {
+    const payload = body ? JSON.stringify(body) : '';
+    const headers = { 'User-Agent': 'jwpz-crm', 'Content-Type': 'application/json' };
+    if (GH_TOKEN) headers['Authorization'] = `token ${GH_TOKEN}`;
+    if (payload) headers['Content-Length'] = Buffer.byteLength(payload);
+    const req = https.request({ hostname: 'api.github.com', path: apiPath, method, headers }, res => {
+      let d = ''; res.on('data', c => d += c);
+      res.on('end', () => { try { resolve({ status: res.statusCode, data: JSON.parse(d) }); } catch { resolve({ status: res.statusCode, data: d }); } });
+    });
+    req.on('error', reject);
+    if (payload) req.write(payload);
+    req.end();
+  });
+}
+
+/* 从 GitHub 拉取备份恢复数据 */
+async function restoreFromGitHub() {
+  if (!GH_TOKEN) { console.log('[备份] 未配置 GH_BACKUP_TOKEN，跳过恢复'); return false; }
+  try {
+    console.log('[备份] 从 GitHub 拉取最新数据...');
+    const r = await ghRequest('GET', `/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`);
+    if (r.status !== 200) { console.log(`[备份] GitHub 上无备份文件 (status ${r.status})，使用本地/种子数据`); return false; }
+    _backupSHA = r.data.sha;
+    const content = Buffer.from(r.data.content, 'base64').toString('utf8');
+    const dbData = JSON.parse(content);
+    /* 验证数据完整性 */
+    if (!dbData.users || !Array.isArray(dbData.users)) { console.log('[备份] 备份数据格式异常，跳过恢复'); return false; }
+    writeDB(dbData);
+    console.log(`[备份] 已恢复数据：${dbData.users.length}用户 ${dbData.customers.length}客户 ${dbData.followups.length}跟进 ${dbData.reports.length}日报`);
+    return true;
+  } catch (e) { console.log('[备份] 恢复失败:', e.message); return false; }
+}
+
+/* 推送数据到 GitHub 备份 */
+async function backupToGitHub() {
+  if (!GH_TOKEN) return;
+  _backupDirty = false;
+  try {
+    const db = readDB();
+    const content = Buffer.from(JSON.stringify(db, null, 2)).toString('base64');
+    /* 获取当前 SHA（如果缓存过期） */
+    if (!_backupSHA) {
+      const r = await ghRequest('GET', `/repos/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`);
+      if (r.status === 200) _backupSHA = r.data.sha;
+      else _backupSHA = '';  /* 文件不存在，首次创建 */
+    }
+    const body = { message: `CRM数据备份 ${new Date().toISOString().slice(0,16)}`, content, branch: GH_BRANCH };
+    if (_backupSHA) body.sha = _backupSHA;  /* 更新已有文件 */
+    const r = await ghRequest('PUT', `/repos/${GH_REPO}/contents/${GH_FILE}`, body);
+    if (r.status === 200 || r.status === 201) {
+      _backupSHA = r.data.content?.sha || '';
+      console.log(`[备份] 已推送到 GitHub (${r.status})`);
+    } else {
+      console.log(`[备份] 推送失败 (status ${r.status}): ${r.data.message || ''}`);
+      _backupSHA = '';  /* SHA 可能过期，下次重新获取 */
+    }
+  } catch (e) { console.log('[备份] 推送异常:', e.message); }
+}
+
+/* 启动定时备份（每5分钟检查，有变更才推送） */
+function startAutoBackup() {
+  if (!GH_TOKEN) return;
+  /* 每次写DB后标记 dirty */
+  const origWriteDB = writeDB;
+  writeDB = function(data) {
+    origWriteDB(data);
+    _backupDirty = true;
+  };
+  if (_backupTimer) clearInterval(_backupTimer);
+  _backupTimer = setInterval(() => {
+    if (_backupDirty) backupToGitHub();
+  }, 5 * 60 * 1000);  /* 5分钟 */
 }
 
 /* ---- seed ---- */
@@ -239,10 +325,15 @@ app.put('/api/users/:id', auth, (req, res) => {
   const i = db.users.findIndex(u => u.id === req.params.id);
   if (i === -1) return res.json({ success: false, msg: '用户不存在' });
   const body = req.body;
+  // 检查用户名是否与其他用户重复
+  if (body.username && db.users.some(u => u.id !== req.params.id && u.username === body.username)) {
+    return res.json({ success: false, msg: '用户名已存在' });
+  }
+  const oldName = db.users[i].name;
   // 不允许修改 role 为 admin
   db.users[i] = { ...db.users[i], ...body, role: db.users[i].role };
-  // 同步客户 salesName
-  if (body.name && body.name !== db.users[i].name) {
+  // 同步客户 salesName（用旧名对比，避免更新后对比失效）
+  if (body.name && body.name !== oldName) {
     db.customers = db.customers.map(c => c.salesId === req.params.id ? { ...c, salesName: body.name } : c);
   }
   writeDB(db);
@@ -293,8 +384,20 @@ app.post('/api/reset', auth, (req, res) => {
   res.json({ success: true, type, data: { users: initial.users, customers: initial.customers, followups: initial.followups, reports: initial.reports, nextPlans: initial.nextPlans } });
 });
 
-/* ---- Start server ---- */
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`久窝朋赞 CRM server running on http://localhost:${PORT}`);
+/* ---- API: Manual Backup ---- */
+app.post('/api/backup', auth, async (req, res) => {
+  const user = readDB().users.find(u => u.id === req.userId);
+  if (!user || user.role !== 'admin') return res.status(403).json({ error: '仅管理员可备份' });
+  await backupToGitHub();
+  res.json({ success: true, msg: '备份已推送到 GitHub' });
 });
+
+/* ---- Start server (先从 GitHub 恢复数据，再启动) ---- */
+const PORT = process.env.PORT || 3000;
+(async () => {
+  await restoreFromGitHub();
+  startAutoBackup();
+  app.listen(PORT, () => {
+    console.log(`久窝朋赞 CRM server running on http://localhost:${PORT}`);
+  });
+})();
