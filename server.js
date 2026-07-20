@@ -217,20 +217,80 @@ app.post('/api/changePassword', auth, (req, res) => {
   res.json({ success: true });
 });
 
+/* ---- API: User CRUD (admin only) ---- */
+app.post('/api/users', auth, (req, res) => {
+  const db = readDB();
+  const admin = db.users.find(u => u.id === req.userId);
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  const u = req.body;
+  if (!u.name || !u.username || !u.password) return res.json({ success: false, msg: '请填写完整信息' });
+  if (db.users.find(x => x.username === u.username)) return res.json({ success: false, msg: '用户名已存在' });
+  if (!u.id) u.id = uid();
+  u.role = 'sales';
+  db.users.push(u);
+  writeDB(db);
+  res.json({ success: true, user: u, users: db.users });
+});
+
+app.put('/api/users/:id', auth, (req, res) => {
+  const db = readDB();
+  const admin = db.users.find(u => u.id === req.userId);
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  const i = db.users.findIndex(u => u.id === req.params.id);
+  if (i === -1) return res.json({ success: false, msg: '用户不存在' });
+  const body = req.body;
+  // 不允许修改 role 为 admin
+  db.users[i] = { ...db.users[i], ...body, role: db.users[i].role };
+  // 同步客户 salesName
+  if (body.name && body.name !== db.users[i].name) {
+    db.customers = db.customers.map(c => c.salesId === req.params.id ? { ...c, salesName: body.name } : c);
+  }
+  writeDB(db);
+  res.json({ success: true, user: db.users[i], users: db.users, customers: db.customers });
+});
+
+app.delete('/api/users/:id', auth, (req, res) => {
+  const db = readDB();
+  const admin = db.users.find(u => u.id === req.userId);
+  if (!admin || admin.role !== 'admin') return res.status(403).json({ error: '仅管理员可操作' });
+  if (req.params.id === req.userId) return res.json({ success: false, msg: '不能删除自己' });
+  db.users = db.users.filter(u => u.id !== req.params.id);
+  writeDB(db);
+  res.json({ success: true, users: db.users });
+});
+
 /* ---- API: Export ---- */
 app.get('/api/export', auth, (req, res) => {
   const db = readDB();
   res.json({ ...db, exportedAt: new Date().toISOString() });
 });
 
+/* ---- clean data for production (only users, no customers/followups/reports) ---- */
+function cleanData() {
+  return {
+    users: [
+      { id: 'u_admin', username: 'admin', password: 'admin123', name: '管理员', role: 'admin', businessLine: '', phone: '', monthlyTarget: 0, hireDate: '' },
+      { id: 'u_lijun', username: 'lijun', password: '123456', name: '李俊', role: 'sales', businessLine: '预付款包房', phone: '13800000001', monthlyTarget: 100, hireDate: '2026-03-15' },
+      { id: 'u_youjun', username: 'youjun', password: '123456', name: '有俊', role: 'sales', businessLine: '智能体平台', phone: '13800000002', monthlyTarget: 50, hireDate: '2026-06-20' },
+      { id: 'u_zhang', username: 'zhang', password: '123456', name: '张磊', role: 'sales', businessLine: '品牌加盟', phone: '13800000003', monthlyTarget: 80, hireDate: '2026-01-10' }
+    ],
+    customers: [],
+    followups: [],
+    reports: [],
+    nextPlans: {},
+    seed_ver: 'clean'
+  };
+}
+
 /* ---- API: Reset seed (admin only) ---- */
 app.post('/api/reset', auth, (req, res) => {
   const db = readDB();
   const user = db.users.find(u => u.id === req.userId);
   if (!user || user.role !== 'admin') return res.status(403).json({ error: '仅管理员可重置' });
-  const initial = seedData();
+  const type = req.body.type || 'seed';
+  const initial = type === 'clean' ? cleanData() : seedData();
   writeDB(initial);
-  res.json({ success: true, data: { users: initial.users, customers: initial.customers, followups: initial.followups, reports: initial.reports, nextPlans: initial.nextPlans } });
+  res.json({ success: true, type, data: { users: initial.users, customers: initial.customers, followups: initial.followups, reports: initial.reports, nextPlans: initial.nextPlans } });
 });
 
 /* ---- Start server ---- */

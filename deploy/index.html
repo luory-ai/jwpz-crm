@@ -362,17 +362,17 @@ a{color:var(--primary);text-decoration:none}
    久窝朋赞 销售 CRM  v4  —  入职分析 + 客户字段扩展 + 报告角色分离
    ========================================================= */
 
-const BIZ_LINES = ['预付款包房','品牌加盟','智能体平台','代运营'];
-const BIZ_COLORS = {'预付款包房':'#4f7cff','品牌加盟':'#8b5cf6','智能体平台':'#22c55e','代运营':'#f59e0b'};
+const BIZ_LINES = ['预付款包房','品牌加盟','智能体平台'];
+const BIZ_COLORS = {'预付款包房':'#4f7cff','品牌加盟':'#8b5cf6','智能体平台':'#22c55e'};
 const CONTRACT_TYPES = ['预付款包房','代运营','加盟'];
-const CONTRACT_COLORS = {'预付款包房':'#4f7cff','代运营':'#f59e0b','加盟':'#f59e0b'};
+const CONTRACT_COLORS = {'预付款包房':'#4f7cff','代运营':'#22c55e','加盟':'#f59e0b'};
 /* v6: 预付款包房回款金额计算：回款=签约金额÷折扣，取整 */
 function calcCollection(amount,discount){
   const d=Number(discount)||1;
   return d>0?Math.round(Number(amount)/d):Number(amount);
 }
 /* v4: 业务线 -> 主签约类型映射 */
-const BIZ_MAIN_TYPE = {'预付款包房':'预付款包房','品牌加盟':'加盟','智能体平台':'代运营','代运营':'代运营'};
+const BIZ_MAIN_TYPE = {'预付款包房':'预付款包房','品牌加盟':'加盟','智能体平台':'代运营'};
 
 const STATUS = {
   new:       {label:'新客户',   cls:'s-new'},
@@ -383,7 +383,7 @@ const STATUS = {
   signed:    {label:'签约打款', cls:'s-signed'}
 };
 const STATUS_FLOW = ['new','potential','valid','intent','review','signed'];
-const VALID_HINT = {'预付款包房':'有效 = 谈到钱用途','品牌加盟':'有效 = 明确加盟意向','智能体平台':'有效 = 明确平台需求','代运营':'有效 = 明确代运营需求'};
+const VALID_HINT = {'预付款包房':'有效 = 谈到钱用途','品牌加盟':'有效 = 明确加盟意向','智能体平台':'有效 = 明确平台需求'};
 
 /* v10: 客户业务标签（代运营/预付款包房/加盟），基于业务线映射到签约类型
    v12: UI 与客户管理的 .biz-tag 一致 */
@@ -394,53 +394,27 @@ function custBizTag(c){
   return `<span class="biz-tag" style="background:${color}22;color:${color}">${tag}</span>`;
 }
 
-/* ---------- Storage: 本地数据缓存（DATA） + DB 读写器 ----------
-   v8: 改造为 API + 本地缓存架构。
-   - DATA 为内存缓存，登录时由后端拉取填充，定时刷新。
-   - DB.get 从 DATA 读取；DB.set 仅更新本地缓存。
-   - 所有写操作通过 api() 异步同步到后端 server.js。
-   - localStorage 不再使用。
-*/
-const DATA = {}; // 本地数据缓存
+/* ---------- Storage: localStorage 模拟（纯前端版） ---------- */
+const LS_KEY = 'jwpz_crm_data';
+const DATA = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+function saveData(){ localStorage.setItem(LS_KEY, JSON.stringify(DATA)); }
 const DB = {
   get(k, def) { return DATA[k] || def; },
-  set(k, v) { DATA[k] = v; } // 仅更新本地缓存；写操作通过 API 同步到后端
+  set(k, v) { DATA[k] = v; saveData(); }
 };
 
-/* ---------- API 辅助 ---------- */
-const API_BASE = ''; // 同域名下为空
-let state = {user:null,token:null,view:'login',params:{},toast:null,history:[]};
+/* ---------- 纯前端：无API，所有操作直接写localStorage ---------- */
+let state = {user:null,token:'local',view:'login',params:{},toast:null,history:[]};
 let editingContracts = [];
 
+/* 纯前端版：api() 直接操作DATA，无网络请求 */
 async function api(method, url, body) {
-  try {
-    const opts = {method, headers:{'Content-Type':'application/json'}};
-    if(state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
-    if(body) opts.body = JSON.stringify(body);
-    const res = await fetch(API_BASE + url, opts);
-    if(res.status===401){state.user=null;state.token=null;render();return null}
-    return await res.json();
-  } catch(e) { console.error('API error:',e); toast('网络错误'); return null; }
+  /* 无需真实API调用，直接返回 */
+  return { success: true };
 }
 
-// 定时刷新数据（每30秒）
-async function refreshData() {
-  if(!state.token) return;
-  const r = await api('GET','/api/data');
-  if(r){
-    DATA.users=r.users;
-    DATA.customers=r.customers;
-    DATA.followups=r.followups;
-    DATA.reports=r.reports;
-    DATA.nextPlans=r.nextPlans||{};
-    render();
-  }
-}
-let _refreshTimer;
-function startRefresh(){
-  if(_refreshTimer)clearInterval(_refreshTimer);
-  _refreshTimer=setInterval(refreshData,30000);
-}
+/* 纯前端版：无需定时刷新 */
+function startRefresh(){ /* noop */ }
 
 /* ---------- Draft auto-save (防误触丢数据) ---------- */
 /* 表单视图列表：这些视图的草稿需要自动保存和恢复 */
@@ -592,23 +566,47 @@ function back(){
 
 /* ---------- Auth ---------- */
 /* v8: 登录改为异步 API 调用，登录成功后填充 DATA 缓存并启动定时刷新 */
+/* 纯前端种子数据 */
+function seedData(){
+  const today = todayStr();
+  DATA.users=[
+    {id:'u_admin',username:'admin',password:'admin123',name:'管理员',role:'admin',businessLine:'',phone:'',monthlyTarget:0,hireDate:''},
+    {id:'u_lijun',username:'lijun',password:'123456',name:'李俊',role:'sales',businessLine:'预付款包房',phone:'13800000001',monthlyTarget:100,hireDate:'2026-03-15'},
+    {id:'u_youjun',username:'youjun',password:'123456',name:'有俊',role:'sales',businessLine:'智能体平台',phone:'13800000002',monthlyTarget:50,hireDate:'2026-06-20'},
+    {id:'u_zhang',username:'zhang',password:'123456',name:'张磊',role:'sales',businessLine:'品牌加盟',phone:'13800000003',monthlyTarget:80,hireDate:'2026-01-10'}
+  ];
+  DATA.customers=[
+    {id:'c1',name:'东莞嘉映玥酒店',contactName:'王总',contactPhone:'-',businessLine:'预付款包房',status:'valid',salesId:'u_lijun',salesName:'李俊',remark:'从侧面了解到酒店欠了房租，具体还在沟通看差多久的房租。差房租缴纳证明。',intendedAmount:0,contracts:[],fundUsage:'预付款（房租缴纳）',docsCompletedDate:'',createdAt:'2026-07-15',updatedAt:today},
+    {id:'c2',name:'米兰特酒店',contactName:'负责人',contactPhone:'-',businessLine:'预付款包房',status:'valid',salesId:'u_lijun',salesName:'李俊',remark:'和负责人沟通预付款事项，想要20万。老板欠了房产税没有交，还需了解酒店经营情况。',intendedAmount:20,contracts:[],fundUsage:'预付款（房产税+经营周转）',docsCompletedDate:'',createdAt:'2026-07-16',updatedAt:today},
+    {id:'c3',name:'武汉城市精品酒店',contactName:'老板',contactPhone:'-',businessLine:'预付款包房',status:'signed',salesId:'u_lijun',salesName:'李俊',remark:'已打款30万。同时已启动代运营服务（7月13日）。',intendedAmount:0,contracts:[{type:'预付款包房',amount:30,discount:0.9,date:'2026-07-13'},{type:'代运营',amount:5,discount:1,date:'2026-07-13'}],fundUsage:'预付款（酒店经营）',docsCompletedDate:'2026-07-10',createdAt:'2026-07-05',updatedAt:'2026-07-13'},
+    {id:'c4',name:'城市快捷酒店',contactName:'老板',contactPhone:'-',businessLine:'预付款包房',status:'signed',salesId:'u_lijun',salesName:'李俊',remark:'已打款20万。',intendedAmount:0,contracts:[{type:'预付款包房',amount:20,discount:0.85,date:'2026-07-13'}],fundUsage:'预付款（经营周转）',docsCompletedDate:'2026-07-08',createdAt:'2026-07-08',updatedAt:'2026-07-13'},
+    {id:'c5',name:'章丘城市快捷酒店',contactName:'老板',contactPhone:'-',businessLine:'智能体平台',status:'valid',salesId:'u_youjun',salesName:'有俊',remark:'初步沟通拿到方案，和老板在沟通。代运营需求。',intendedAmount:0,contracts:[],fundUsage:'代运营服务费',docsCompletedDate:'',createdAt:'2026-07-14',updatedAt:today},
+    {id:'c6',name:'某意向酒店A',contactName:'李总',contactPhone:'-',businessLine:'预付款包房',status:'intent',salesId:'u_lijun',salesName:'李俊',remark:'30日内有望成交，意向18万。',intendedAmount:18,contracts:[],fundUsage:'预付款（装修周转）',docsCompletedDate:'',createdAt:'2026-07-10',updatedAt:'2026-07-16'}
+  ];
+  DATA.followups=[
+    {id:'f1',customerId:'c1',customerName:'东莞嘉映玥酒店',salesId:'u_lijun',salesName:'李俊',businessLine:'预付款包房',followDate:today,content:'差房租缴纳证明，从侧面了解到酒店欠了房租。',statusChange:'valid',nextAction:'跟进房租拖欠时长',createdAt:today+' 18:30'},
+    {id:'f2',customerId:'c2',customerName:'米兰特酒店',salesId:'u_lijun',salesName:'李俊',businessLine:'预付款包房',followDate:today,content:'拜访米兰特酒店，和负责人沟通预付款事项。',statusChange:'valid',nextAction:'了解酒店经营情况',createdAt:today+' 17:00'},
+    {id:'f3',customerId:'c5',customerName:'章丘城市快捷酒店',salesId:'u_youjun',salesName:'有俊',businessLine:'智能体平台',followDate:'2026-07-16',content:'初步沟通拿到方案。',statusChange:'valid',nextAction:'等老板反馈',createdAt:'2026-07-16 16:00'}
+  ];
+  DATA.reports=[];
+  DATA.nextPlans={};
+  saveData();
+}
+
+/* 纯前端登录：从localStorage读取用户数据，校验密码 */
 async function doLoginApi(u,p){
-  const r = await api('POST','/api/login',{username:u,password:p});
-  if(!r||!r.success){toast(r?.msg||'登录失败');return}
-  state.user=r.user;state.token=r.token;
-  DATA.users=r.data.users;
-  DATA.customers=r.data.customers;
-  DATA.followups=r.data.followups;
-  DATA.reports=r.data.reports;
-  DATA.nextPlans=r.data.nextPlans||{};
+  const users=DB.get('users',[]);
+  const user=users.find(x=>x.username===u&&x.password===p);
+  if(!user){toast('用户名或密码错误');return}
+  state.user=user;state.token='local';
+  /* 初始化种子数据（首次登录） */
+  if(!DB.get('customers',[]).length){seedData();saveData()}
   state.history=[];state.view='dashboard';state.params={};
   startRefresh();render();window.scrollTo(0,0);
 }
-/* v8: logout 清除 token 和 DATA，停止 refresh timer */
+/* 纯前端 logout：仅清除session，不清除localStorage数据 */
 function logout(){
   state.user=null;state.token=null;state.history=[];
-  DATA.users=[];DATA.customers=[];DATA.followups=[];DATA.reports=[];DATA.nextPlans={};
-  if(_refreshTimer)clearInterval(_refreshTimer);
   go('login');
 }
 
@@ -1033,7 +1031,7 @@ function ImportView(){
     </div>`;
   }
   html+=`<div class="card"><div class="section-title" style="font-size:14px">导入说明</div><div class="xs t3" style="line-height:1.8">
-    • <b>客户名称</b>：必填<br>• <b>业务线</b>：预付款包房 / 品牌加盟 / 智能体平台 / 代运营<br>
+    • <b>客户名称</b>：必填<br>• <b>业务线</b>：预付款包房 / 品牌加盟 / 智能体平台<br>
     • <b>状态</b>：新客户/潜在需求/有效/意向/评审/签约打款<br>• <b>意向金额</b>：数字（万），仅"意向"状态生效<br>
     • 导入客户自动分配给对应业务线销售</div></div></div></div>`;
   return html;
@@ -2451,44 +2449,22 @@ function UserFormView(){
   </div></div>`;
   return html;
 }
-/* v4: saveUser 保存 hireDate + v26 API同步 */
-async function saveUser(id){
+/* v4: saveUser 保存 hireDate */
+function saveUser(id){
   const name=$('#uf-name').value.trim();const username=$('#uf-user').value.trim();const pass=$('#uf-pass').value.trim();
   if(!name||!username||!pass){toast('请填写完整信息');return}
   const hireDate=$('#uf-hireDate')?$('#uf-hireDate').value:'';
   if(!hireDate){toast('请选择入职日期');return}
-  const bizLine=$('#uf-biz').value;const phone=$('#uf-phone').value.trim();const target=Number($('#uf-target').value)||0;
-  if(id){
-    // 更新本地缓存
-    let users=DB.get('users',[]);const i=users.findIndex(u=>u.id===id);
-    users[i]={...users[i],name,username,password:pass,businessLine:bizLine,phone,monthlyTarget:target,hireDate};
-    DB.set('users',users);
+  let users=DB.get('users',[]);
+  if(!id&&users.find(u=>u.username===username)){toast('用户名已存在');return}
+  if(id){const i=users.findIndex(u=>u.id===id);users[i]={...users[i],name,username,password:pass,businessLine:$('#uf-biz').value,phone:$('#uf-phone').value.trim(),monthlyTarget:Number($('#uf-target').value)||0,hireDate};
     let cs=DB.get('customers',[]);cs=cs.map(c=>c.salesId===id?{...c,salesName:name}:c);DB.set('customers',cs);
-    // 同步到后端
-    const r=await api('PUT','/api/users/'+id,{name,username,password:pass,businessLine:bizLine,phone,monthlyTarget:target,hireDate});
-    if(r&&r.success){DB.set('users',r.users);if(r.customers)DB.set('customers',r.customers);}
-  }else{
-    if(DB.get('users',[]).find(u=>u.username===username)){toast('用户名已存在');return}
-    const newId=uid();
-    const u={id:newId,name,username,password:pass,businessLine:bizLine,phone,monthlyTarget:target,hireDate,role:'sales'};
-    // 更新本地缓存
-    let users=DB.get('users',[]);users.push(u);DB.set('users',users);
-    // 同步到后端
-    const r=await api('POST','/api/users',u);
-    if(r&&r.success){DB.set('users',r.users);}
-    else{toast('添加失败，请重试');return}
-  }
-  toast('已保存');go('team');
+  }else{users.push({id:uid(),name,username,password:pass,businessLine:$('#uf-biz').value,phone:$('#uf-phone').value.trim(),monthlyTarget:Number($('#uf-target').value)||0,hireDate,role:'sales'})}
+  DB.set('users',users);toast('已保存');go('team');
 }
-async function delUser(id){
+function delUser(id){
   if(!confirm('删除该销售账号？其名下客户将保留但需重新分配。'))return;
-  // 更新本地缓存
-  DB.set('users',DB.get('users',[]).filter(u=>u.id!==id));
-  // 同步到后端
-  const r=await api('DELETE','/api/users/'+id);
-  if(r&&r.success){DB.set('users',r.users);}
-  else{toast('删除失败，请重试');return}
-  toast('已删除');go('team');
+  DB.set('users',DB.get('users',[]).filter(u=>u.id!==id));toast('已删除');go('team');
 }
 
 /* ---------- Hire Analysis (v4 新增) ---------- */
