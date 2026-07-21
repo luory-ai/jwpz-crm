@@ -50,6 +50,8 @@ function fromGun(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   const out = {};
   for (const [k, v] of Object.entries(obj)) {
+    // 过滤 Gun 内部元数据字段
+    if (k === '_' || k === '#') continue;
     if (typeof v === 'string' && v.startsWith('__JSON__')) {
       try { out[k] = JSON.parse(v.slice(8)); } catch { out[k] = v; }
     } else {
