@@ -2,7 +2,7 @@
 # 使用方法：在 Render 控制台选择 "New → Blueprint" 并连接 GitHub 仓库
 services:
   - type: web
-    name: jwpz-crm-gun
+    name: jwpz-crm-2
     env: node
     plan: free
     buildCommand: npm install

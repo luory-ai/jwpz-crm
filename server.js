@@ -10,6 +10,7 @@ const SEED_FILE = path.join(__dirname, 'data', 'db.json');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const app = express();
+app.use(express.json()); // 解析 JSON 请求体（REST API 需要）
 
 // ========== Gun.serve 中间件（处理 CORS 和静态资源） ==========
 
@@ -41,6 +42,208 @@ app.post('/gun/*', express.raw({ type: '*/*' }), (req, res, next) => {
 // ========== 静态文件和 SPA fallback ==========
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// ========== REST API 端点（供小程序 wx.request 调用） ==========
+
+// fromGun: 将 Gun 序列化数据还原为 JS 对象
+function fromGun(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v === 'string' && v.startsWith('__JSON__')) {
+      try { out[k] = JSON.parse(v.slice(8)); } catch { out[k] = v; }
+    } else {
+      out[k] = v === undefined ? '' : v;
+    }
+  }
+  return out;
+}
+
+// toGun: 将 JS 对象序列化为 Gun 存储格式
+function toGun(obj) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (Array.isArray(v)) {
+      out[k] = '__JSON__' + JSON.stringify(v);
+    } else if (v && typeof v === 'object' && !(v instanceof Date)) {
+      out[k] = '__JSON__' + JSON.stringify(v);
+    } else {
+      out[k] = v === undefined ? '' : v;
+    }
+  }
+  return out;
+}
+
+// Gun 数据读取辅助函数（Promise 封装）
+function gunOnce(nodePath) {
+  return new Promise((resolve) => {
+    gun.get(nodePath).once((data) => {
+      if (!data) { resolve(null); return; }
+      const result = fromGun(data);
+      resolve(result);
+    }, { wait: 500 }); // 等500ms让Gun读取完成
+  });
+}
+
+function gunMap(nodePath) {
+  return new Promise((resolve) => {
+    const items = [];
+    gun.get(nodePath).map().once((data, id) => {
+      if (data && data !== null) {
+        const item = fromGun(data);
+        if (item) { item.id = item.id || id; items.push(item); }
+      }
+    });
+    // 等1秒让所有map回调执行完
+    setTimeout(() => resolve(items), 1000);
+  });
+}
+
+// 认证中间件
+function authMiddleware(req, res, next) {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ message: '未登录' });
+  }
+  // 简易token验证（token = username:timestamp:hash）
+  try {
+    const parts = token.split(':');
+    if (parts.length < 2) return res.status(401).json({ message: 'token无效' });
+    req.username = parts[0];
+    next();
+  } catch {
+    res.status(401).json({ message: 'token无效' });
+  }
+}
+
+// POST /api/login — 登录
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ message: '请输入账号和密码' });
+  }
+
+  try {
+    // 从 Gun 中查找用户
+    const usersData = await gunMap('jwpz-crm-users-v1');
+    const user = usersData.find(u => u.username === username);
+    if (!user) {
+      return res.status(401).json({ message: '账号不存在' });
+    }
+    if (user.password !== password) {
+      return res.status(401).json({ message: '密码错误' });
+    }
+
+    // 生成简易 token
+    const timestamp = Date.now();
+    const token = `${username}:${timestamp}:crm`;
+
+    // 加载全量数据
+    const customers = await gunMap('jwpz-crm-system-v1/customers');
+    const followups = await gunMap('jwpz-crm-system-v1/followups');
+    const reports = await gunMap('jwpz-crm-system-v1/reports');
+    const users = usersData.map(u => ({ ...u, password: undefined })); // 不返回密码
+
+    res.json({
+      token,
+      user: { ...user, password: undefined },
+      data: { customers, followups, reports, users }
+    });
+  } catch (err) {
+    console.error('[api] login error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// GET /api/data — 刷新全量数据
+app.get('/api/data', authMiddleware, async (req, res) => {
+  try {
+    const customers = await gunMap('jwpz-crm-system-v1/customers');
+    const followups = await gunMap('jwpz-crm-system-v1/followups');
+    const reports = await gunMap('jwpz-crm-system-v1/reports');
+    const usersData = await gunMap('jwpz-crm-users-v1');
+    const users = usersData.map(u => ({ ...u, password: undefined }));
+
+    res.json({ customers, followups, reports, users });
+  } catch (err) {
+    console.error('[api] data error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// POST /api/customers — 新建客户
+app.post('/api/customers', authMiddleware, async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id) data.id = 'c_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    data.createdAt = data.createdAt || new Date().toISOString().slice(0, 10);
+    data.updatedAt = data.updatedAt || new Date().toISOString().slice(0, 10);
+
+    gun.get('jwpz-crm-system-v1/customers').get(data.id).put(toGun(data));
+    res.json({ success: true, id: data.id });
+  } catch (err) {
+    console.error('[api] create customer error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// PUT /api/customers/:id — 更新客户
+app.put('/api/customers/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = req.body;
+    data.updatedAt = new Date().toISOString().slice(0, 10);
+
+    gun.get('jwpz-crm-system-v1/customers').get(id).put(toGun(data));
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[api] update customer error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// DELETE /api/customers/:id — 删除客户
+app.delete('/api/customers/:id', authMiddleware, async (req, res) => {
+  try {
+    const id = req.params.id;
+    gun.get('jwpz-crm-system-v1/customers').get(id).put(null);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('[api] delete customer error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// POST /api/followups — 新建跟进
+app.post('/api/followups', authMiddleware, async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id) data.id = 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    data.createdAt = data.createdAt || new Date().toISOString();
+
+    gun.get('jwpz-crm-system-v1/followups').get(data.id).put(toGun(data));
+    res.json({ success: true, id: data.id });
+  } catch (err) {
+    console.error('[api] create followup error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
+
+// POST /api/reports — 新建/更新报告
+app.post('/api/reports', authMiddleware, async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.id) data.id = 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    data.createdAt = data.createdAt || new Date().toISOString();
+    data.updatedAt = data.updatedAt || new Date().toISOString();
+
+    gun.get('jwpz-crm-system-v1/reports').get(data.id).put(toGun(data));
+    res.json({ success: true, id: data.id });
+  } catch (err) {
+    console.error('[api] create report error:', err);
+    res.status(500).json({ message: '服务器错误' });
+  }
+});
 
 // SPA fallback — 所有其他 GET 请求返回 index.html
 app.get('*', (req, res) => {
